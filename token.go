@@ -20,10 +20,13 @@ type Token struct {
 	close     *Token
 	prev      *Token
 	next      *Token
+	content   []byte
 }
 
 func newToken() *Token {
-	return &Token{}
+	return &Token{
+		content: make([]byte, 0),
+	}
 }
 
 func (t *Token) IsBlank() bool {
