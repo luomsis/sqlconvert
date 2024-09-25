@@ -198,7 +198,49 @@ func (p *Parser) GetWordToken(token *Token) bool {
 
 		// check whether we meet a special character allowed in identifiers
 		if strings.ContainsRune(symbols, rune(c)) {
-			//
+			// @variable in SQL Server and MySQL, :new in Oracle trigger, #temp table name in SQL Server
+			// * meaning all columns, - in COBOL identifier, label : label name in DB2
+			// $ or $$ often used as replacement markers, $ is also allowed in Oracle identifiers
+			if c != '_' && c != '.' && c != '@' && c != ':' && c != '#' && c != '*' &&
+				c != '-' && c != '"' && c != '[' && c != ' ' && c != '&' && c != '$' {
+				break
+			}
+
+			// spaces are allowed between identifier parts: table . name
+			if c == ' ' {
+				identLen := 0
+				for i := 0; p.index+i < p.length; i++ {
+					if p.input[p.index+i] == ' ' || p.input[p.index+i] == '\t' ||
+						p.input[p.index+i] == '\n' || p.input[p.index+i] == '\r' {
+						continue
+					}
+
+					if p.input[p.index+i] == '.' {
+						identLen = i
+					}
+					break
+				}
+
+				// not a multi-part identifier
+				if len == 0 || identLen == 0 {
+					break
+				}
+				p.index += identLen
+				len += identLen
+				continue
+			}
+
+			// process sqlserver and sybase
+
+			// * must be after . to not confuse with multiplcation operator
+			if p.input[p.index] == '*' && (len == 0 || (len > 0 && p.index > 0 && p.input[p.index-1] == '.')) {
+				break
+			}
+
+			// check for partially quoted identifier that starts as a word then quoted part follows
+			if p.input[p.index] == '"' || p.input[p.index] == '\'' {
+				break
+			}
 		}
 	}
 	return false
