@@ -5,6 +5,8 @@ import "strings"
 var symbols = " _\"'.,;:(){}[]=+-*<>!$~|~`@#%^&/\\\n\r\t"
 
 type Parser struct {
+	sourceType    SQLDialect
+	scope         *ListWM
 	input         []byte
 	index         int
 	length        int
@@ -188,7 +190,7 @@ func (p *Parser) GetWordToken(token *Token) bool {
 	//
 	// Identifiers starts as a word but then there is quoted part SCHEMA."TABLE".COL i.e.
 
-	// bool partially_quoted_identifier = false;
+	partiallyQuotedIdentifier := false
 
 	for p.index < p.length {
 		// check for a comment
@@ -233,18 +235,77 @@ func (p *Parser) GetWordToken(token *Token) bool {
 			// process sqlserver and sybase
 
 			// * must be after . to not confuse with multiplcation operator
-			if p.input[p.index] == '*' && (len == 0 || (len > 0 && p.index > 0 && p.input[p.index-1] == '.')) {
+			if p.input[p.index] == '*' && (len == 0 || (len > 0 && p.index > 0 && p.input[p.index-1] != '.')) {
 				break
 			}
 
 			// check for partially quoted identifier that starts as a word then quoted part follows
-			if p.input[p.index] == '"' || p.input[p.index] == '\'' {
+			if p.input[p.index] == '"' || p.input[p.index] == '[' {
+				if len > 0 && p.index > 0 && p.input[p.index-1] == '.' {
+					partiallyQuotedIdentifier = true
+				}
+				break
+			}
+
+			if p.input[p.index] == ':' {
+				if (p.index < p.length-1 && p.input[p.index+1] == '=') ||
+					p.Source(SQLDB2, SQLTeradata, SQLMySQL) &&
+						!p.IsScope(SQLScopeSelectStmt, 0) ||
+					(p.index < p.length-1 && p.input[p.index+1] == ':') ||
+					(p.index > 0 && p.input[p.index-1] == ':') {
+					p.index++
+					break
+				}
+			}
+
+			if p.input[p.index] == '&' && len != 0 {
+				break
+			}
+
+			right := true
+			// Allow - in COBOL only
+
+			// @ must not be followed by a blank or delimiter
+			if p.input[p.index] == '@' {
+				if p.index == p.length-2 ||
+					(p.index < p.length-2 && (p.input[p.index+1] == ' ' || p.input[p.index+1] == '\t' || p.input[p.index+1] == '\r' || p.input[p.index+1] == '\n')) {
+					right = false
+				}
+			}
+
+			if !right {
 				break
 			}
 		}
+		p.index++
+		len++
+	}
+	if partiallyQuotedIdentifier {
+
 	}
 	return false
 
+}
+
+func (p *Parser) Source(sources ...SQLDialect) bool {
+	for _, v := range sources {
+		if v == p.sourceType {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *Parser) IsScope(scope, scope2 SQLClauseScope) bool {
+	if p.scope.GetCount() == 0 {
+		return false
+	}
+	for i := p.scope.GetLast(); i != nil; i = i.Next {
+		if i.Value1 == scope || i.Value2 == scope2 {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) PushBack(token *Token) {
