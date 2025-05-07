@@ -7225,7 +7225,7 @@ native_datatype_element
     | DOUBLE PRECISION?
     | FLOAT
     | REAL
-    | NCHAR
+    | NCHAR VARYING?
     | LONG RAW?
     | CHAR
     | CHARACTER
