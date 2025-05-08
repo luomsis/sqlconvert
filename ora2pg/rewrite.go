@@ -135,7 +135,62 @@ func (l *Ora2pg) EnterDatatype(ctx *parser.DatatypeContext) {
 			}
 			l.TokenStreamRewriter.ReplaceToken(antlr.DefaultProgramName, ctx.GetStart(), ctx.GetStop(), replaceStr)
 		}
-
 	}
 	l.BasePlSqlParserListener.EnterDatatype(ctx)
+}
+
+func (l *Ora2pg) EnterCreate_function_body(ctx *parser.Create_function_bodyContext) {
+	if parameters := ctx.AllParameter(); parameters != nil {
+		for i := range parameters {
+			if parameters[i].IN(0) != nil && parameters[i].OUT(0) != nil {
+				l.TokenStreamRewriter.ReplaceTokenDefault(parameters[i].IN(0).GetSymbol(), parameters[i].OUT(0).GetSymbol(), "INOUT")
+			}
+		}
+	}
+	if ctx.RETURN() != nil {
+		l.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.RETURN().GetSymbol(), "RETURNS")
+	}
+	if len(ctx.AllDETERMINISTIC()) != 0 {
+		len := len(ctx.AllDETERMINISTIC())
+		l.TokenStreamRewriter.DeleteTokenDefault(ctx.AllDETERMINISTIC()[0].GetSymbol(), ctx.AllDETERMINISTIC()[len-1].GetSymbol())
+	}
+	if ctx.IS() != nil {
+		l.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.IS().GetSymbol(), "AS $$")
+	}
+	if ctx.AS() != nil {
+		l.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.AS().GetSymbol(), "AS $$")
+	}
+	if ctx.Body() != nil && ctx.Body().Label_name() != nil {
+		l.TokenStreamRewriter.DeleteTokenDefault(ctx.Body().Label_name().GetStart(), ctx.Body().Label_name().GetStop())
+	}
+	l.BasePlSqlParserListener.EnterCreate_function_body(ctx)
+}
+
+func (l *Ora2pg) EnterCreate_procedure_body(ctx *parser.Create_procedure_bodyContext) {
+
+}
+
+func (l *Ora2pg) EnterQuery_block(ctx *parser.Query_blockContext) {
+	if ctx.From_clause() != nil && ctx.From_clause().Table_ref_list().GetText() == "dual" {
+		l.TokenStreamRewriter.DeleteTokenDefault(ctx.From_clause().GetStart(), ctx.From_clause().GetStop())
+	}
+}
+func (l *Ora2pg) EnterGeneral_element_part(ctx *parser.General_element_partContext) {
+	if ctx.Id_expression() != nil &&
+		ctx.Id_expression().Regular_id() != nil &&
+		ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c() != nil &&
+		ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR() != nil {
+		if ctx.Function_argument(0) != nil {
+			if len(ctx.Function_argument(0).AllArgument()) == 2 {
+				a1 := ctx.Function_argument(0).Argument(0)
+				a2 := ctx.Function_argument(0).Argument(1)
+				l.TokenStreamRewriter.ReplaceTokenDefault(
+					ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
+					ctx.Function_argument(0).GetStop(),
+					"POSITION("+a2.GetText()+" IN "+a1.GetText()+")")
+			} else {
+				// unsupport
+			}
+		}
+	}
 }
