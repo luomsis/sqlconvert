@@ -22,6 +22,7 @@ func TestOra2pg(t *testing.T) {
 
 func TestEnterCreate_function_body(t *testing.T) {
 	input := antlr.NewInputStream("CREATE OR REPLACE FUNCTION TEST (p_id IN NUMBER,p_name IN VARCHAR2,p_info IN OUT VARCHAR2) RETURN VARCHAR2 IS BEGIN RETURN p_info; END test;")
+	target := ""
 	lexer := parser.NewPlSqlLexer(input)
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := parser.NewPlSqlParser(tokens)
@@ -29,11 +30,15 @@ func TestEnterCreate_function_body(t *testing.T) {
 	listener := ora2pg.NewOra2pg(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 	fmt.Println(input)
-	fmt.Println(listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size())))
+	output := listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size()))
+	if output != target {
+		t.Errorf("Expected [%s], got [%s]", target, output)
+	}
 }
 
 func TestEnterOther_function(t *testing.T) {
 	input := antlr.NewInputStream("SELECT INSTR('abc', 'b') FROM dual;")
+	target := "SELECT POSITION('b' IN 'abc') ;"
 	lexer := parser.NewPlSqlLexer(input)
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := parser.NewPlSqlParser(tokens)
@@ -41,6 +46,41 @@ func TestEnterOther_function(t *testing.T) {
 	listener := ora2pg.NewOra2pg(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 	// fmt.Println(antlr.TreesStringTree(tree, nil, parser))
-	fmt.Println(input)
-	fmt.Println(listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size())))
+	output := listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size()))
+	if output != target {
+		t.Errorf("Expected [%s], got [%s]", target, output)
+	}
+
+}
+
+func TestBuiltInFunctions(t *testing.T) {
+	// test function LISTAGG
+	origin1 := "SELECT LISTAGG(name, ';') WITHIN GROUP (ORDER BY name) FROM cities;"
+	target1 := "SELECT STRING_AGG(name, ';' ORDER BY name) FROM cities;"
+	output1 := ora2pg.Convert(origin1)
+	if output1 != target1 {
+		t.Errorf("Expected [%s], got [%s]", target1, output1)
+	}
+
+	// test function TO_CHAR
+	origin2 := "SELECT TO_CHAR(12345) AS string_number FROM dual;"
+	target2 := "SELECT 12345::text AS string_number ;"
+	output2 := ora2pg.Convert(origin2)
+	if output2 != target2 {
+		t.Errorf("Expected [%s], got [%s]", target2, output2)
+	}
+
+	origin3 := "SELECT TO_CHAR(POWER(2, 10)) AS string_number FROM dual;"
+	target3 := "SELECT POWER(2, 10)::text AS string_number ;"
+	output3 := ora2pg.Convert(origin3)
+	if output3 != target3 {
+		t.Errorf("Expected [%s], got [%s]", target3, output3)
+	}
+
+	origin4 := "SELECT TO_CHAR(salary) AS string_number FROM employees;"
+	target4 := "SELECT salary::text AS string_number FROM employees;"
+	output4 := ora2pg.Convert(origin4)
+	if output4 != target4 {
+		t.Errorf("Expected [%s], got [%s]", target4, output4)
+	}
 }
