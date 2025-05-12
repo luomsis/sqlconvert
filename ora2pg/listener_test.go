@@ -15,7 +15,7 @@ func TestOra2pg(t *testing.T) {
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := parser.NewPlSqlParser(tokens)
 	tree := parser.Sql_script()
-	listener := ora2pg.NewOra2pg(tokens)
+	listener := ora2pg.NewOra2PgListener(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 	fmt.Println(listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size())))
 }
@@ -27,7 +27,7 @@ func TestEnterCreate_function_body(t *testing.T) {
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := parser.NewPlSqlParser(tokens)
 	tree := parser.Sql_script()
-	listener := ora2pg.NewOra2pg(tokens)
+	listener := ora2pg.NewOra2PgListener(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 	fmt.Println(input)
 	output := listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size()))
@@ -43,7 +43,7 @@ func TestEnterOther_function(t *testing.T) {
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 	parser := parser.NewPlSqlParser(tokens)
 	tree := parser.Sql_script()
-	listener := ora2pg.NewOra2pg(tokens)
+	listener := ora2pg.NewOra2PgListener(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 	// fmt.Println(antlr.TreesStringTree(tree, nil, parser))
 	output := listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size()))
@@ -82,5 +82,26 @@ func TestBuiltInFunctions(t *testing.T) {
 	output4 := ora2pg.Convert(origin4)
 	if output4 != target4 {
 		t.Errorf("Expected [%s], got [%s]", target4, output4)
+	}
+
+	origin5 := "SELECT FROM_TZ(TIMESTAMP '2021-09-24 21:12:11', 'UTC') FROM dual;"
+	target5 := "SELECT TIMESTAMP '2021-09-24 21:12:11' AT TIME ZONE 'UTC' ;"
+	output5 := ora2pg.Convert(origin5)
+	if output5 != target5 {
+		t.Errorf("Expected [%s], got [%s]", target5, output5)
+	}
+
+	// origin6 := "SELECT TRUNC(TO_DATE('2024-12-14 13:14:58'), 'MM') FROM dual;"
+	// target6 := "SELECT DATE_TRUNC('MM', '2024-12-14 13:14:58'::TIMESTAMP) ;"
+	// output6 := ora2pg.Convert(origin6)
+	// if output6 != target6 {
+	// 	t.Errorf("Expected [%s], got [%s]", target6, output6)
+	// }
+
+	origin7 := "SELECT INSTR('abc', 'b') FROM dual;"
+	target7 := "SELECT POSITION('b' IN 'abc') ;"
+	output7 := ora2pg.Convert(origin7)
+	if output7 != target7 {
+		t.Errorf("Expected [%s], got [%s]", target7, output7)
 	}
 }
