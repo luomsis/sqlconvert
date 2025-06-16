@@ -28,15 +28,22 @@ func Convert1(sql string) string {
 	parser := parser.NewPlSqlParser(tokens)
 	tree := parser.Sql_script()
 	visitor := NewOra2PgVisitor(tokens)
-	parser.Sql_script().Accept(visitor)
+	visitor.Visit(tree)
 	fmt.Println(antlr.TreesStringTree(tree, nil, parser))
-	// return visitor.TokenStreamRewriter.GetTextDefault()
+	return visitor.TokenStreamRewriter.GetTextDefault()
 
-	return tokens.GetAllText()
+	// return visitor.GetResult()
 }
 
 func (o *Ora2PgVisitor) GetResult() string {
 	return o.builder.String()
+}
+
+func (v *Ora2PgVisitor) Visit(node antlr.ParseTree) interface{} {
+	if ruleNode, ok := node.(antlr.RuleNode); ok {
+		return v.VisitChildren(ruleNode)
+	}
+	return nil
 }
 
 func (v *Ora2PgVisitor) VisitChildren(node antlr.RuleNode) interface{} {
@@ -55,14 +62,13 @@ func (v *Ora2PgVisitor) VisitChildren(node antlr.RuleNode) interface{} {
 		}
 	}
 	return nil
-
 }
 
 func (o *Ora2PgVisitor) VisitNon_reserved_keywords_pre12c(ctx *parser.Non_reserved_keywords_pre12cContext) interface{} {
 	if ctx.SYSDATE() != nil {
-		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.SYSDATE().GetSymbol(), "CURRENT_TIMESTAMP(0)")
+		return "CURRENT_TIMESTAMP(0)"
 	} else if ctx.SYSTIMESTAMP() != nil {
-		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.SYSTIMESTAMP().GetSymbol(), "CURRENT_TIMESTAMP")
+		return "CURRENT_TIMESTAMP"
 	}
 	return nil
 }
