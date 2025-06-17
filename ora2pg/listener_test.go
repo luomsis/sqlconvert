@@ -99,6 +99,121 @@ func TestOra2pg(t *testing.T) {
 			input:    "CREATE TABLE test (content CLOB);",
 			expected: "CREATE IF NOT EXISTS TABLE test (content TEXT);",
 		},
+		{
+			name:     "BINARY_FLOAT Type",
+			input:    "CREATE TABLE test (value BINARY_FLOAT);",
+			expected: "CREATE IF NOT EXISTS TABLE test (value REAL);",
+		},
+		{
+			name:     "BINARY_DOUBLE Type",
+			input:    "CREATE TABLE test (value BINARY_DOUBLE);",
+			expected: "CREATE IF NOT EXISTS TABLE test (value DOUBLE PRECISION);",
+		},
+		{
+			name:     "INTEGER Type",
+			input:    "CREATE TABLE test (id INTEGER);",
+			expected: "CREATE IF NOT EXISTS TABLE test (id DECIMAL(38));",
+		},
+		{
+			name:     "DATE Type",
+			input:    "CREATE TABLE test (created_at DATE);",
+			expected: "CREATE IF NOT EXISTS TABLE test (created_at TIMESTAMP(0));",
+		},
+		{
+			name:     "BLOB Type",
+			input:    "CREATE TABLE test (data BLOB);",
+			expected: "CREATE IF NOT EXISTS TABLE test (data BYTEA);",
+		},
+		{
+			name:     "BFILE Type",
+			input:    "CREATE TABLE test (file BFILE);",
+			expected: "CREATE IF NOT EXISTS TABLE test (file VARCHAR(255));",
+		},
+		{
+			name:     "ROWID Type",
+			input:    "CREATE TABLE test (row_id ROWID);",
+			expected: "CREATE IF NOT EXISTS TABLE test (row_id CHAR(10));",
+		},
+		{
+			name:     "XMLTYPE Type",
+			input:    "CREATE TABLE test (xml_data XMLTYPE);",
+			expected: "CREATE IF NOT EXISTS TABLE test (xml_data XML);",
+		},
+		{
+			name:     "NUMBER with Precision",
+			input:    "CREATE TABLE test (amount NUMBER(10,2));",
+			expected: "CREATE IF NOT EXISTS TABLE test (amount DECIMAL(10,2));",
+		},
+		{
+			name:     "NUMBER without Precision",
+			input:    "CREATE TABLE test (amount NUMBER);",
+			expected: "CREATE IF NOT EXISTS TABLE test (amount DOUBLE PRECISION);",
+		},
+		{
+			name:     "RAW Type",
+			input:    "CREATE TABLE test (data RAW(2000));",
+			expected: "CREATE IF NOT EXISTS TABLE test (data BYTEA);",
+		},
+		{
+			name:     "UROWID Type",
+			input:    "CREATE TABLE test (row_id UROWID(4000));",
+			expected: "CREATE IF NOT EXISTS TABLE test (row_id VARCHAR(4000));",
+		},
+		{
+			name:     "INTERVAL YEAR TO MONTH",
+			input:    "CREATE TABLE test (duration INTERVAL YEAR TO MONTH);",
+			expected: "CREATE IF NOT EXISTS TABLE test (duration INTERVAL YEAR TO MONTH);",
+		},
+		{
+			name:     "INTERVAL DAY TO SECOND",
+			input:    "CREATE TABLE test (duration INTERVAL DAY TO SECOND(6));",
+			expected: "CREATE IF NOT EXISTS TABLE test (duration INTERVAL DAY TO SECOND(6));",
+		},
+		{
+			name:     "String Concatenation with NULL",
+			input:    "SELECT 'Hello' || NULL || 'World' FROM dual;",
+			expected: "SELECT CONCAT('Hello', NULL, 'World') ;",
+		},
+		{
+			name:     "ROWNUM with Complex Condition",
+			input:    "SELECT * FROM employees WHERE salary > 5000 AND ROWNUM <= 10;",
+			expected: "SELECT * FROM employees WHERE salary > 5000 LIMIT 10;",
+		},
+		{
+			name:     "MINUS with Multiple Columns",
+			input:    "SELECT id, name FROM table1 MINUS SELECT id, name FROM table2;",
+			expected: "SELECT id, name FROM table1 EXCEPT SELECT id, name FROM table2;",
+		},
+		{
+			name:     "TO_CHAR with Date Format",
+			input:    "SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD') FROM dual;",
+			expected: "SELECT TO_CHAR(CURRENT_TIMESTAMP(0), 'YYYY-MM-DD') ;",
+		},
+		{
+			name:     "FROM_TZ with Complex Timestamp",
+			input:    "SELECT FROM_TZ(TIMESTAMP '2021-09-24 21:12:11.123456', 'America/New_York') FROM dual;",
+			expected: "SELECT TIMESTAMP '2021-09-24 21:12:11.123456' AT TIME ZONE 'America/New_York' ;",
+		},
+		{
+			name:     "TRUNC with Date and Format",
+			input:    "SELECT TRUNC(TO_DATE('2024-12-14 13:14:58'), 'YYYY') FROM dual;",
+			expected: "SELECT DATE_TRUNC('YYYY', TO_DATE('2024-12-14 13:14:58')) ;",
+		},
+		{
+			name:     "LISTAGG with Complex Order By",
+			input:    "SELECT LISTAGG(name, ';') WITHIN GROUP (ORDER BY name DESC, id) FROM cities;",
+			expected: "SELECT STRING_AGG(name, ';' ORDER BY name DESC, id) FROM cities;",
+		},
+		{
+			name:     "INSTR with Start Position",
+			input:    "SELECT INSTR('Hello World', 'o', 5) FROM dual;",
+			expected: "SELECT POSITION('o' IN SUBSTRING('Hello World' FROM 5)) + 4 ;",
+		},
+		{
+			name:     "INSTR with Occurrence",
+			input:    "SELECT INSTR('Hello World', 'o', 1, 2) FROM dual;",
+			expected: "SELECT POSITION('o' IN SUBSTRING('Hello World' FROM POSITION('o' IN 'Hello World') + 1)) + POSITION('o' IN 'Hello World') ;",
+		},
 	}
 
 	for _, tt := range tests {
@@ -111,6 +226,7 @@ func TestOra2pg(t *testing.T) {
 			listener := ora2pg.NewOra2PgListener(tokens)
 			antlr.ParseTreeWalkerDefault.Walk(listener, tree)
 			output := listener.TokenStreamRewriter.GetText(antlr.DefaultProgramName, antlr.NewInterval(0, tokens.Size()))
+			output = ora2pg.ConvertPostProcess(output)
 			if output != tt.expected {
 				t.Errorf("Expected [%s], got [%s]", tt.expected, output)
 			}

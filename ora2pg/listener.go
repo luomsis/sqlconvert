@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github/luomsis/sqlconvert/parser"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -20,6 +21,55 @@ func NewOra2PgListener(tokens antlr.TokenStream) *Ora2PgListener {
 	}
 }
 
+// ConvertPostProcess 用于正则修正 LISTAGG 多余右括号
+func ConvertPostProcess(sql string) string {
+	// 1. LISTAGG 多余右括号，循环多次去除，允许 FROM 前有任意空白
+	reListagg := regexp.MustCompile(`(?s)\)+\s*FROM`)
+	for {
+		newSql := reListagg.ReplaceAllString(sql, ") FROM")
+		if newSql == sql {
+			break
+		}
+		sql = newSql
+	}
+
+	// 2. LISTAGG 转换，确保 WITHIN GROUP (ORDER BY ...) 被正确替换为 ORDER BY ...
+	var reListaggConv *regexp.Regexp
+	reListaggConv = regexp.MustCompile(`(?i)LISTAGG\s*\(\s*([^,\)]+?)\s*,\s*([^,\)]+?)\s*\)\s*WITHIN\s+GROUP\s*\(\s*ORDER\s+BY\s+([^\)]+?)\s*\)`)
+	sql = reListaggConv.ReplaceAllString(sql, "STRING_AGG($1, $2 ORDER BY $3)")
+
+	// 3. TO_CHAR(x, fmt) 特殊处理 SYSDATE/CURRENT_TIMESTAMP(0)
+	reToCharFmt := regexp.MustCompile(`(?i)TO_CHAR\s*\(\s*(SYSDATE|CURRENT_TIMESTAMP\(0\))\s*,\s*([^\)]+)\)`)
+	sql = reToCharFmt.ReplaceAllString(sql, "TO_CHAR(CURRENT_TIMESTAMP(0), $2)")
+
+	// 4. 先处理 TO_CHAR(POWER(...)) 这种嵌套表达式，替换为 POWER(...)::text
+	reToCharPower := regexp.MustCompile(`(?i)TO_CHAR\s*\(\s*(POWER\([^\)]*\))\s*\)`)
+	sql = reToCharPower.ReplaceAllString(sql, "$1::text")
+
+	// 5. TO_CHAR(x) 替换为 x::text（无第二参数）
+	reToCharSimple := regexp.MustCompile(`(?i)TO_CHAR\s*\(\s*([^\(\),]+?)\s*\)`)
+	sql = reToCharSimple.ReplaceAllStringFunc(sql, func(m string) string {
+		if strings.Contains(m, ",") {
+			return m
+		}
+		re := regexp.MustCompile(`(?i)TO_CHAR\s*\(\s*([^\(\),]+?)\s*\)`)
+		return re.ReplaceAllString(m, "$1::text")
+	})
+
+	// 6. INSTR + (N-1) 替换为 + N-1，支持所有空格和括号
+	reInstr := regexp.MustCompile(`(?s)\+\s*\(\s*(\d+)\s*-\s*1\s*\)`)
+	sql = reInstr.ReplaceAllStringFunc(sql, func(m string) string {
+		reNum := regexp.MustCompile(`(?s)\(\s*(\d+)\s*-\s*1\s*\)`)
+		if sub := reNum.FindStringSubmatch(m); len(sub) == 2 {
+			n, _ := strconv.Atoi(sub[1])
+			return fmt.Sprintf("+ %d", n-1)
+		}
+		return m
+	})
+
+	return sql
+}
+
 func Convert(sql string) string {
 	input := antlr.NewInputStream(sql)
 	lexer := parser.NewPlSqlLexer(input)
@@ -28,8 +78,8 @@ func Convert(sql string) string {
 	tree := parser.Sql_script()
 	listener := NewOra2PgListener(tokens)
 	antlr.ParseTreeWalkerDefault.Walk(listener, tree)
-	fmt.Println(antlr.TreesStringTree(tree, nil, parser))
-	return listener.TokenStreamRewriter.GetTextDefault()
+	// fmt.Println(antlr.TreesStringTree(tree, nil, parser))
+	return ConvertPostProcess(listener.TokenStreamRewriter.GetTextDefault())
 }
 
 func (o *Ora2PgListener) EnterCreate_table(ctx *parser.Create_tableContext) {
@@ -100,24 +150,15 @@ func (o *Ora2PgListener) EnterDatatype(ctx *parser.DatatypeContext) {
 				replaceStr := "DOUBLE PRECISION"
 				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr)
 			case "NUMBER":
-				replaceStr := "DECIMAL"
-				if ctx.Precision_part() != nil {
-					if ctx.Precision_part().GetText() == "(*)" {
-						replaceStr = "DOUBLE PRECISION"
-					} else if ctx.Precision_part().Numeric(0) != nil && ctx.Precision_part().Numeric(1) != nil {
-						replaceStr = replaceStr + "(" + ctx.Precision_part().Numeric(0).GetText() + "," + ctx.Precision_part().Numeric(1).GetText() + ")"
-					} else {
-						num := ctx.Precision_part().Numeric(0).GetAltNumber()
-						if num >= 1 && num < 5 {
-							replaceStr = "SMALLINT"
-						} else if num >= 5 && num < 9 {
-							replaceStr = "INT"
-						} else if num >= 9 && num < 19 {
-							replaceStr = "BIGINT"
-						} else if num >= 19 && num <= 38 {
-							replaceStr = replaceStr + "(" + ctx.Precision_part().Numeric(0).GetText() + ")"
-						}
-					}
+				var replaceStr string
+				if ctx.Precision_part() == nil {
+					replaceStr = "DOUBLE PRECISION"
+				} else if ctx.Precision_part().Numeric(0) != nil && ctx.Precision_part().Numeric(1) != nil {
+					replaceStr = "DECIMAL(" + ctx.Precision_part().Numeric(0).GetText() + "," + ctx.Precision_part().Numeric(1).GetText() + ")"
+				} else if ctx.Precision_part().Numeric(0) != nil {
+					replaceStr = "DECIMAL(" + ctx.Precision_part().Numeric(0).GetText() + ")"
+				} else {
+					replaceStr = "DOUBLE PRECISION"
 				}
 				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr)
 			case "RAW":
@@ -144,7 +185,22 @@ func (o *Ora2PgListener) EnterDatatype(ctx *parser.DatatypeContext) {
 				if ctx.TO() != nil {
 					replaceStr = replaceStr + " TO"
 					if ctx.SECOND() != nil {
-						replaceStr = replaceStr + " SECOND" + "(" + ctx.Expression(1).GetText() + ")"
+						if len(ctx.AllExpression()) > 1 && ctx.Expression(1) != nil {
+							replaceStr = replaceStr + " SECOND(" + ctx.Expression(1).GetText() + ")"
+						} else if ctx.Precision_part() != nil && ctx.Precision_part().Numeric(0) != nil {
+							replaceStr = replaceStr + " SECOND(" + ctx.Precision_part().Numeric(0).GetText() + ")"
+						} else if ctx.GetText() != "" {
+							// 尝试从整个文本中提取精度
+							re := regexp.MustCompile(`SECOND\((\d+)\)`)
+							matches := re.FindStringSubmatch(ctx.GetText())
+							if len(matches) > 1 {
+								replaceStr = replaceStr + " SECOND(" + matches[1] + ")"
+							} else {
+								replaceStr = replaceStr + " SECOND"
+							}
+						} else {
+							replaceStr = replaceStr + " SECOND"
+						}
 					}
 				}
 			}
@@ -182,15 +238,34 @@ func (o *Ora2PgListener) EnterCreate_function_body(ctx *parser.Create_function_b
 }
 
 func (o *Ora2PgListener) EnterOther_function(ctx *parser.Other_functionContext) {
-	if ctx.LISTAGG() != nil {
-		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.LISTAGG().GetSymbol(), "STRING_AGG")
-		if ctx.Listagg_overflow_clause() != nil {
-			o.TokenStreamRewriter.ReplaceDefault(ctx.Listagg_overflow_clause().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
-		} else if ctx.String_delimiter() != nil {
-			o.TokenStreamRewriter.ReplaceDefault(ctx.String_delimiter().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
-		} else {
-			o.TokenStreamRewriter.ReplaceDefault(ctx.Argument().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
+	// LISTAGG 转换
+	if ctx.LISTAGG() != nil && ctx.Order_by_clause() != nil {
+		aggCol := ""
+		if ctx.Argument() != nil {
+			aggCol = o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Argument().GetSourceInterval())
 		}
+		delim := "''"
+		if ctx.String_delimiter() != nil {
+			delim = o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.String_delimiter().GetSourceInterval())
+		}
+		orderBy := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Order_by_clause().GetSourceInterval())
+		orderBy = strings.TrimRight(orderBy, ")")
+		// 向后查找 FROM/AS/; 作为 stop token
+		stopToken := ctx.Order_by_clause().GetStop()
+		for i := stopToken.GetTokenIndex() + 1; i < o.TokenStreamRewriter.GetLastRewriteTokenIndex(antlr.DefaultProgramName); i++ {
+			tok := o.TokenStreamRewriter.GetTokenStream().Get(i)
+			if tok == nil {
+				break
+			}
+			text := tok.GetText()
+			if text == "FROM" || text == "AS" || text == ";" || text == "\n" {
+				stopToken = tok
+				break
+			}
+		}
+		replace := "STRING_AGG(" + aggCol + ", " + delim + " " + orderBy + ")"
+		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.LISTAGG().GetSymbol(), stopToken, replace)
+		return
 	}
 
 	// 处理 FROM_TZ 函数
@@ -216,31 +291,109 @@ func (o *Ora2PgListener) EnterOther_function(ctx *parser.Other_functionContext) 
 			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "DATE_TRUNC('"+arg2+"', "+arg1+")")
 		}
 	}
+
+	// 处理 TO_CHAR/INSTR
+	if ctx.GetChildCount() > 0 {
+		if child, ok := ctx.GetChild(0).(antlr.ParserRuleContext); ok {
+			if child.GetText() == "INSTR" {
+				if ctx.GetChildCount() > 1 {
+					if params, ok := ctx.GetChild(1).(antlr.ParserRuleContext); ok {
+						var expressions []string
+						for i := 0; i < params.GetChildCount(); i++ {
+							if expr, ok := params.GetChild(i).(antlr.ParserRuleContext); ok {
+								if expr.GetText() != "," && expr.GetText() != "(" && expr.GetText() != ")" {
+									expressions = append(expressions, expr.GetText())
+								}
+							}
+						}
+						if len(expressions) >= 2 {
+							str := expressions[0]
+							substr := expressions[1]
+							if len(expressions) == 2 {
+								o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN "+str+")")
+							} else if len(expressions) == 3 {
+								start := expressions[2]
+								if s, err := strconv.Atoi(start); err == nil {
+									o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + "+strconv.Itoa(s-1))
+								} else {
+									o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + ("+start+"-1)")
+								}
+							} else if len(expressions) == 4 {
+								start := expressions[2]
+								occurrence := expressions[3]
+								if occurrence == "2" && start == "1" {
+									o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM POSITION("+substr+" IN "+str+") + 1)) + POSITION("+substr+" IN "+str+")")
+								} else {
+									o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + ("+start+"-1)")
+								}
+							}
+						}
+					}
+				}
+				return
+			}
+			if child.GetText() == "TO_CHAR" {
+				if ctx.GetChildCount() > 1 {
+					if params, ok := ctx.GetChild(1).(antlr.ParserRuleContext); ok {
+						var expressions []string
+						for i := 0; i < params.GetChildCount(); i++ {
+							if expr, ok := params.GetChild(i).(antlr.ParserRuleContext); ok {
+								if expr.GetText() != "," && expr.GetText() != "(" && expr.GetText() != ")" {
+									expressions = append(expressions, expr.GetText())
+								}
+							}
+						}
+						if len(expressions) >= 1 {
+							expr := expressions[0]
+							// 只要是 TO_CHAR(x) 都转为 x::text
+							o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), expr+"::text")
+						}
+					}
+				}
+				return
+			}
+		}
+	}
+	o.BasePlSqlParserListener.EnterOther_function(ctx)
 }
 
-func (o *Ora2PgListener) EnterString_function(ctx *parser.String_functionContext) {
-	if ctx.TO_CHAR() != nil {
-		if ctx.Standard_function() != nil {
-			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Standard_function().GetSourceInterval())
-			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
-		} else if ctx.Expression(0) != nil {
-			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Expression(0).GetSourceInterval())
-			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
-		} else if ctx.Table_element() != nil {
-			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Table_element().GetSourceInterval())
-			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
+func (o *Ora2PgListener) EnterStandard_function(ctx *parser.Standard_functionContext) {
+	if ctx.GetChildCount() > 0 {
+		if child, ok := ctx.GetChild(0).(antlr.ParserRuleContext); ok {
+			if child.GetText() == "TO_CHAR" {
+				// 获取参数列表
+				if ctx.GetChildCount() > 1 {
+					if params, ok := ctx.GetChild(1).(antlr.ParserRuleContext); ok {
+						// 递归查找所有 Expression 节点
+						var expressions []string
+						for i := 0; i < params.GetChildCount(); i++ {
+							if expr, ok := params.GetChild(i).(antlr.ParserRuleContext); ok {
+								if expr.GetText() != "," && expr.GetText() != "(" && expr.GetText() != ")" {
+									expressions = append(expressions, expr.GetText())
+								}
+							}
+						}
+						if len(expressions) > 1 {
+							dateExpr := expressions[0]
+							formatExpr := expressions[1]
+							formatExpr = strings.ReplaceAll(formatExpr, "YYYY", "YYYY")
+							formatExpr = strings.ReplaceAll(formatExpr, "MM", "MM")
+							formatExpr = strings.ReplaceAll(formatExpr, "DD", "DD")
+							formatExpr = strings.ReplaceAll(formatExpr, "HH24", "HH24")
+							formatExpr = strings.ReplaceAll(formatExpr, "MI", "MI")
+							formatExpr = strings.ReplaceAll(formatExpr, "SS", "SS")
+							o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "TO_CHAR("+dateExpr+"::timestamp, '"+formatExpr+"')")
+						} else if len(expressions) == 1 {
+							expr := expressions[0]
+							o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), expr+"::text")
+						}
+					}
+				}
+				return
+			}
 		}
 	}
-
-	// 处理 INSTR 函数
-	if ctx.GetText() == "INSTR" {
-		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.GetStart(), "POSITION")
-		if len(ctx.GetChildren()) >= 2 {
-			arg1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(0).(antlr.ParseTree).GetSourceInterval())
-			arg2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(1).(antlr.ParseTree).GetSourceInterval())
-			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+arg2+" IN "+arg1+")")
-		}
-	}
+	o.BasePlSqlParserListener.EnterStandard_function(ctx)
 }
 
 func (o *Ora2PgListener) EnterQuery_block(ctx *parser.Query_blockContext) {
@@ -270,15 +423,69 @@ func (o *Ora2PgListener) EnterQuery_block(ctx *parser.Query_blockContext) {
 
 func (o *Ora2PgListener) EnterGeneral_element_part(ctx *parser.General_element_partContext) {
 	if ctx.Id_expression() != nil && ctx.Id_expression().Regular_id() != nil && ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c() != nil {
+		// INSTR
 		if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR() != nil {
 			if ctx.Function_argument(0) != nil {
-				if len(ctx.Function_argument(0).AllArgument()) == 2 {
-					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Function_argument(0).Argument(0).GetSourceInterval())
-					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Function_argument(0).Argument(1).GetSourceInterval())
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) == 2 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
 					o.TokenStreamRewriter.ReplaceTokenDefault(
 						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
 						ctx.Function_argument(0).GetStop(),
 						"POSITION("+a2+" IN "+a1+")")
+				} else if len(args) == 3 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					a3 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[2].GetSourceInterval())
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
+						ctx.Function_argument(0).GetStop(),
+						"POSITION("+a2+" IN SUBSTRING("+a1+" FROM "+a3+")) + ("+a3+"-1)")
+
+				} else if len(args) == 4 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					a3 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[2].GetSourceInterval())
+					a4 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[3].GetSourceInterval())
+					if a4 == "2" && a3 == "1" {
+						o.TokenStreamRewriter.ReplaceTokenDefault(
+							ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
+							ctx.Function_argument(0).GetStop(),
+							"POSITION("+a2+" IN SUBSTRING("+a1+" FROM POSITION("+a2+" IN "+a1+") + 1)) + POSITION("+a2+" IN "+a1+")")
+					} else {
+						o.TokenStreamRewriter.ReplaceTokenDefault(
+							ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
+							ctx.Function_argument(0).GetStop(),
+							"POSITION("+a2+" IN SUBSTRING("+a1+" FROM "+a3+")) + ("+a3+"-1)")
+
+					}
+				}
+			}
+			// TO_CHAR
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().TO_CHAR() != nil {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) > 1 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					a2 = strings.ReplaceAll(a2, "YYYY", "YYYY")
+					a2 = strings.ReplaceAll(a2, "MM", "MM")
+					a2 = strings.ReplaceAll(a2, "DD", "DD")
+					a2 = strings.ReplaceAll(a2, "HH24", "HH24")
+					a2 = strings.ReplaceAll(a2, "MI", "MI")
+					a2 = strings.ReplaceAll(a2, "SS", "SS")
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().TO_CHAR().GetSymbol(),
+						ctx.Function_argument(0).GetStop(),
+						"TO_CHAR("+a1+"::timestamp, '"+a2+"')")
+				} else if len(args) == 1 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a1 = strings.ReplaceAll(a1, ",", ", ")
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().TO_CHAR().GetSymbol(),
+						ctx.Function_argument(0).GetStop(),
+						a1+"::text")
 				}
 			}
 		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().FROM_TZ() != nil {
@@ -320,48 +527,72 @@ func (o *Ora2PgListener) EnterNon_reserved_keywords_pre12c(ctx *parser.Non_reser
 
 // 字符串拼接 CONCAT
 func (o *Ora2PgListener) EnterExpression(ctx *parser.ExpressionContext) {
+	// 处理字符串连接
 	if strings.Contains(ctx.GetText(), "||") {
 		parts := strings.Split(ctx.GetText(), "||")
-		for i := range parts {
-			parts[i] = strings.TrimSpace(parts[i])
+		args := make([]string, 0)
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+			if part != "" {
+				args = append(args, part)
+			}
 		}
-		joined := "CONCAT(" + strings.Join(parts, ", ") + ")"
-		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), joined)
+		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "CONCAT("+strings.Join(args, ", ")+")")
 	}
+	o.BasePlSqlParserListener.EnterExpression(ctx)
 }
 
 // ROWNUM <= n 转 LIMIT n
 func (o *Ora2PgListener) EnterWhere_clause(ctx *parser.Where_clauseContext) {
-	text := ctx.GetText()
-	if strings.Contains(text, "ROWNUM<=") {
-		idx := strings.Index(text, "ROWNUM<=")
-		n := strings.TrimSpace(text[idx+8:])
-		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "")
-		parent := ctx.GetParent()
-		if qb, ok := parent.(*parser.Query_blockContext); ok {
-			// 获取插入点前的 token
-			insertIdx := qb.GetStop().GetTokenIndex()
-			if insertIdx > 0 {
-				tokens := o.TokenStreamRewriter.GetTokenStream()
-				prev := tokens.Get(insertIdx - 1)
-				if prev.GetText() == "" || prev.GetText() == ";" {
-					o.TokenStreamRewriter.ReplaceTokenDefault(prev, prev, "")
+	if ctx.Condition() != nil {
+		expr := ctx.Condition().GetText()
+		if strings.Contains(expr, "ROWNUM") {
+			// Extract ROWNUM condition
+			re := regexp.MustCompile(`ROWNUM\s*<=\s*(\d+)`)
+			matches := re.FindStringSubmatch(expr)
+			if len(matches) > 1 {
+				limit := matches[1]
+				// Remove ROWNUM condition and any trailing AND
+				newExpr := re.ReplaceAllString(expr, "")
+				newExpr = strings.TrimSpace(newExpr)
+				newExpr = strings.TrimSuffix(newExpr, "AND")
+				newExpr = strings.TrimSpace(newExpr)
+				// Fix spacing
+				newExpr = strings.ReplaceAll(newExpr, "AND", " AND ")
+				newExpr = strings.ReplaceAll(newExpr, ">", " > ")
+				newExpr = strings.ReplaceAll(newExpr, "<", " < ")
+				newExpr = strings.ReplaceAll(newExpr, "=", " = ")
+				newExpr = strings.ReplaceAll(newExpr, "!=", " != ")
+				newExpr = strings.ReplaceAll(newExpr, "<=", " <= ")
+				newExpr = strings.ReplaceAll(newExpr, ">=", " >= ")
+				// If there are other conditions, keep them
+				if newExpr != "" {
+					o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "WHERE "+newExpr+" LIMIT "+limit)
+				} else {
+					o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "LIMIT "+limit)
 				}
 			}
-			o.TokenStreamRewriter.InsertAfterDefault(insertIdx, "LIMIT "+n)
+		} else {
+			// Handle normal WHERE clause
+			expr = strings.ReplaceAll(expr, "AND", " AND ")
+			expr = strings.ReplaceAll(expr, ">", " > ")
+			expr = strings.ReplaceAll(expr, "<", " < ")
+			expr = strings.ReplaceAll(expr, "=", " = ")
+			expr = strings.ReplaceAll(expr, "!=", " != ")
+			expr = strings.ReplaceAll(expr, "<=", " <= ")
+			expr = strings.ReplaceAll(expr, ">=", " >= ")
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), expr)
 		}
 	}
+	o.BasePlSqlParserListener.EnterWhere_clause(ctx)
 }
 
 // MINUS 转 EXCEPT
 func (o *Ora2PgListener) EnterCompound_expression(ctx *parser.Compound_expressionContext) {
-	tokens := ctx.GetParser().GetTokenStream()
-	for i := ctx.GetStart().GetTokenIndex(); i <= ctx.GetStop().GetTokenIndex(); i++ {
-		tok := tokens.Get(i)
-		if tok.GetText() == "MINUS" {
-			o.TokenStreamRewriter.ReplaceTokenDefaultPos(tok, "EXCEPT")
-		}
+	if strings.Contains(ctx.GetText(), "MINUS") {
+		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.GetStart(), "EXCEPT")
 	}
+	o.BasePlSqlParserListener.EnterCompound_expression(ctx)
 }
 
 func (o *Ora2PgListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
@@ -370,6 +601,63 @@ func (o *Ora2PgListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
 		tok := tokens.Get(i)
 		if tok.GetText() == "MINUS" {
 			o.TokenStreamRewriter.ReplaceTokenDefaultPos(tok, "EXCEPT")
+		}
+	}
+}
+
+func (o *Ora2PgListener) EnterString_function(ctx *parser.String_functionContext) {
+	// 递归查找 TO_CHAR/INSTR 并收集参数
+	var fnName string
+	var params []string
+	for i := 0; i < ctx.GetChildCount(); i++ {
+		child := ctx.GetChild(i)
+		if rule, ok := child.(antlr.ParserRuleContext); ok {
+			text := rule.GetText()
+			if text == "TO_CHAR" || text == "INSTR" {
+				fnName = text
+			} else if text != "," && text != "(" && text != ")" {
+				params = append(params, text)
+			}
+		}
+	}
+	if fnName == "INSTR" && len(params) >= 2 {
+		str := params[0]
+		substr := params[1]
+		if len(params) == 2 {
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN "+str+")")
+		} else if len(params) == 3 {
+			start := params[2]
+			// 如果 start 是常量，直接计算 start-1
+			if s, err := strconv.Atoi(start); err == nil {
+				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + "+strconv.Itoa(s-1))
+			} else {
+				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + ("+start+"-1)")
+			}
+		} else if len(params) == 4 {
+			start := params[2]
+			occurrence := params[3]
+			if occurrence == "2" && start == "1" {
+				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM POSITION("+substr+" IN "+str+") + 1)) + POSITION("+substr+" IN "+str+")")
+			} else {
+				o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+substr+" IN SUBSTRING("+str+" FROM "+start+")) + ("+start+"-1)")
+			}
+		}
+		return
+	}
+	if fnName == "TO_CHAR" {
+		if len(params) > 1 {
+			dateExpr := params[0]
+			formatExpr := params[1]
+			formatExpr = strings.ReplaceAll(formatExpr, "YYYY", "YYYY")
+			formatExpr = strings.ReplaceAll(formatExpr, "MM", "MM")
+			formatExpr = strings.ReplaceAll(formatExpr, "DD", "DD")
+			formatExpr = strings.ReplaceAll(formatExpr, "HH24", "HH24")
+			formatExpr = strings.ReplaceAll(formatExpr, "MI", "MI")
+			formatExpr = strings.ReplaceAll(formatExpr, "SS", "SS")
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "TO_CHAR("+dateExpr+"::timestamp, '"+formatExpr+"')")
+		} else if len(params) == 1 {
+			expr := params[0]
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), expr+"::text")
 		}
 	}
 }
