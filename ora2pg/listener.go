@@ -3,6 +3,8 @@ package ora2pg
 import (
 	"fmt"
 	"github/luomsis/sqlconvert/parser"
+	"regexp"
+	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -182,50 +184,90 @@ func (o *Ora2PgListener) EnterCreate_function_body(ctx *parser.Create_function_b
 func (o *Ora2PgListener) EnterOther_function(ctx *parser.Other_functionContext) {
 	if ctx.LISTAGG() != nil {
 		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.LISTAGG().GetSymbol(), "STRING_AGG")
+		if ctx.Listagg_overflow_clause() != nil {
+			o.TokenStreamRewriter.ReplaceDefault(ctx.Listagg_overflow_clause().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
+		} else if ctx.String_delimiter() != nil {
+			o.TokenStreamRewriter.ReplaceDefault(ctx.String_delimiter().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
+		} else {
+			o.TokenStreamRewriter.ReplaceDefault(ctx.Argument().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
+		}
 	}
 
-	if ctx.Listagg_overflow_clause() != nil {
-		o.TokenStreamRewriter.ReplaceDefault(ctx.Listagg_overflow_clause().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
-	} else if ctx.String_delimiter() != nil {
-		o.TokenStreamRewriter.ReplaceDefault(ctx.String_delimiter().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
-	} else {
-		o.TokenStreamRewriter.ReplaceDefault(ctx.Argument().GetStop().GetTokenIndex()+1, ctx.Order_by_clause().GetStart().GetTokenIndex()-1, " ")
+	// 处理 FROM_TZ 函数
+	if ctx.GetText() == "FROM_TZ" {
+		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.GetStart(), "")
+		if len(ctx.GetChildren()) >= 2 {
+			arg1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(0).(antlr.ParseTree).GetSourceInterval())
+			arg2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(1).(antlr.ParseTree).GetSourceInterval())
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), arg1+" AT TIME ZONE "+arg2)
+		}
+	}
+
+	// 处理 TRUNC 函数
+	if ctx.GetText() == "TRUNC" {
+		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.GetStart(), "DATE_TRUNC")
+		if len(ctx.GetChildren()) >= 2 {
+			arg1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(0).(antlr.ParseTree).GetSourceInterval())
+			arg2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(1).(antlr.ParseTree).GetSourceInterval())
+			// 用正则去除所有括号和空格
+			re := regexp.MustCompile(`[()'\s]+`)
+			arg1 = re.ReplaceAllString(arg1, "")
+			arg2 = re.ReplaceAllString(arg2, "")
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "DATE_TRUNC('"+arg2+"', "+arg1+")")
+		}
 	}
 }
 
 func (o *Ora2PgListener) EnterString_function(ctx *parser.String_functionContext) {
-	if ctx.TO_CHAR() != nil && len(ctx.AllQuoted_string()) == 0 {
+	if ctx.TO_CHAR() != nil {
 		if ctx.Standard_function() != nil {
 			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Standard_function().GetSourceInterval())
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
+		} else if ctx.Expression(0) != nil {
+			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Expression(0).GetSourceInterval())
 			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
 		} else if ctx.Table_element() != nil {
 			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Table_element().GetSourceInterval())
 			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
-		} else if len(ctx.AllExpression()) != 0 {
-			replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Expression(0).GetSourceInterval())
-			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::text")
 		}
 	}
-	// } else if ctx.TO_DATE() != nil {
-	// 	if ctx.Standard_function() != nil {
-	// 		replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Standard_function().GetSourceInterval())
-	// 		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::TIMESTAMP")
-	// 	} else if ctx.Table_element() != nil {
-	// 		replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Table_element().GetSourceInterval())
-	// 		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::TIMESTAMP")
-	// 	} else if len(ctx.AllExpression()) != 0 {
-	// 		replaceStr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Expression(0).GetSourceInterval())
-	// 		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), replaceStr+"::TIMESTAMP")
-	// 	}
 
-	// }
+	// 处理 INSTR 函数
+	if ctx.GetText() == "INSTR" {
+		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.GetStart(), "POSITION")
+		if len(ctx.GetChildren()) >= 2 {
+			arg1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(0).(antlr.ParseTree).GetSourceInterval())
+			arg2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.GetChild(1).(antlr.ParseTree).GetSourceInterval())
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "POSITION("+arg2+" IN "+arg1+")")
+		}
+	}
 }
 
 func (o *Ora2PgListener) EnterQuery_block(ctx *parser.Query_blockContext) {
-	if ctx.From_clause() != nil && ctx.From_clause().Table_ref_list().GetText() == "dual" {
-		o.TokenStreamRewriter.DeleteTokenDefault(ctx.From_clause().GetStart(), ctx.From_clause().GetStop())
+	if ctx.From_clause() != nil && ctx.From_clause().Table_ref_list() != nil {
+		tableText := ctx.From_clause().Table_ref_list().GetText()
+		if tableText == "dual" {
+			o.TokenStreamRewriter.DeleteTokenDefault(ctx.From_clause().GetStart(), ctx.From_clause().GetStop())
+		}
 	}
+	// 递归所有token，遇到MINUS就替换
+	tokens := ctx.GetParser().GetTokenStream()
+	for i := ctx.GetStart().GetTokenIndex(); i <= ctx.GetStop().GetTokenIndex(); i++ {
+		tok := tokens.Get(i)
+		if tok.GetText() == "MINUS" {
+			o.TokenStreamRewriter.ReplaceTokenDefaultPos(tok, "EXCEPT")
+		}
+	}
+	// 处理 ROWNUM（兼容）
+	if ctx.Where_clause() != nil {
+		whereText := ctx.Where_clause().GetText()
+		if strings.Contains(whereText, "ROWNUM<=") {
+			o.TokenStreamRewriter.ReplaceTokenDefault(ctx.Where_clause().GetStart(), ctx.Where_clause().GetStop(), "")
+		}
+	}
+	o.BasePlSqlParserListener.EnterQuery_block(ctx)
 }
+
 func (o *Ora2PgListener) EnterGeneral_element_part(ctx *parser.General_element_partContext) {
 	if ctx.Id_expression() != nil && ctx.Id_expression().Regular_id() != nil && ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c() != nil {
 		if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR() != nil {
@@ -237,8 +279,6 @@ func (o *Ora2PgListener) EnterGeneral_element_part(ctx *parser.General_element_p
 						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR().GetSymbol(),
 						ctx.Function_argument(0).GetStop(),
 						"POSITION("+a2+" IN "+a1+")")
-				} else {
-					// unsupport
 				}
 			}
 		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().FROM_TZ() != nil {
@@ -255,16 +295,14 @@ func (o *Ora2PgListener) EnterGeneral_element_part(ctx *parser.General_element_p
 		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().TRUNC() != nil {
 			if ctx.Function_argument(0) != nil {
 				if len(ctx.Function_argument(0).AllArgument()) == 2 {
-					ctx.Function_argument(0).Argument(0).EnterRule(o)
-					// antlr.ParserRuleContextEmpty.EnterRule()
-					// ctx.Function_argument(0).GetChild(0)
-					ctx.Function_argument(0).Argument(1).EnterRule(o)
 					datetime := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Function_argument(0).Argument(0).GetSourceInterval())
 					unit := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, ctx.Function_argument(0).Argument(1).GetSourceInterval())
+					// 去除引号和空格
+					unit = strings.Trim(unit, "' \t\n\r")
 					o.TokenStreamRewriter.ReplaceTokenDefault(
 						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().TRUNC().GetSymbol(),
 						ctx.Function_argument(0).GetStop(),
-						"DATE_TRUNC( "+unit+", "+datetime+" )")
+						"DATE_TRUNC('"+unit+"', "+datetime+")")
 				}
 			}
 		}
@@ -276,5 +314,62 @@ func (o *Ora2PgListener) EnterNon_reserved_keywords_pre12c(ctx *parser.Non_reser
 		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.SYSDATE().GetSymbol(), "CURRENT_TIMESTAMP(0)")
 	} else if ctx.SYSTIMESTAMP() != nil {
 		o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.SYSTIMESTAMP().GetSymbol(), "CURRENT_TIMESTAMP")
+	}
+	o.BasePlSqlParserListener.EnterNon_reserved_keywords_pre12c(ctx)
+}
+
+// 字符串拼接 CONCAT
+func (o *Ora2PgListener) EnterExpression(ctx *parser.ExpressionContext) {
+	if strings.Contains(ctx.GetText(), "||") {
+		parts := strings.Split(ctx.GetText(), "||")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		joined := "CONCAT(" + strings.Join(parts, ", ") + ")"
+		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), joined)
+	}
+}
+
+// ROWNUM <= n 转 LIMIT n
+func (o *Ora2PgListener) EnterWhere_clause(ctx *parser.Where_clauseContext) {
+	text := ctx.GetText()
+	if strings.Contains(text, "ROWNUM<=") {
+		idx := strings.Index(text, "ROWNUM<=")
+		n := strings.TrimSpace(text[idx+8:])
+		o.TokenStreamRewriter.ReplaceTokenDefault(ctx.GetStart(), ctx.GetStop(), "")
+		parent := ctx.GetParent()
+		if qb, ok := parent.(*parser.Query_blockContext); ok {
+			// 获取插入点前的 token
+			insertIdx := qb.GetStop().GetTokenIndex()
+			if insertIdx > 0 {
+				tokens := o.TokenStreamRewriter.GetTokenStream()
+				prev := tokens.Get(insertIdx - 1)
+				if prev.GetText() == "" || prev.GetText() == ";" {
+					o.TokenStreamRewriter.ReplaceTokenDefault(prev, prev, "")
+				}
+			}
+			o.TokenStreamRewriter.InsertAfterDefault(insertIdx, "LIMIT "+n)
+		}
+	}
+}
+
+// MINUS 转 EXCEPT
+func (o *Ora2PgListener) EnterCompound_expression(ctx *parser.Compound_expressionContext) {
+	tokens := ctx.GetParser().GetTokenStream()
+	for i := ctx.GetStart().GetTokenIndex(); i <= ctx.GetStop().GetTokenIndex(); i++ {
+		tok := tokens.Get(i)
+		if tok.GetText() == "MINUS" {
+			o.TokenStreamRewriter.ReplaceTokenDefaultPos(tok, "EXCEPT")
+		}
+	}
+}
+
+func (o *Ora2PgListener) EnterEveryRule(ctx antlr.ParserRuleContext) {
+	tokens := o.TokenStreamRewriter.GetTokenStream()
+	for i := ctx.GetStart().GetTokenIndex(); i <= ctx.GetStop().GetTokenIndex(); i++ {
+		tok := tokens.Get(i)
+		if tok.GetText() == "MINUS" {
+			o.TokenStreamRewriter.ReplaceTokenDefaultPos(tok, "EXCEPT")
+		}
 	}
 }

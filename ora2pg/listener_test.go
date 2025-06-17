@@ -54,6 +54,51 @@ func TestOra2pg(t *testing.T) {
 			input:    "SELECT FROM_TZ(TIMESTAMP '2021-09-24 21:12:11', 'UTC') FROM dual;",
 			expected: "SELECT TIMESTAMP '2021-09-24 21:12:11' AT TIME ZONE 'UTC' ;",
 		},
+		{
+			name:     "TRUNC Function",
+			input:    "SELECT TRUNC(TO_DATE('2024-12-14 13:14:58'), 'MM') FROM dual;",
+			expected: "SELECT DATE_TRUNC('MM', TO_DATE('2024-12-14 13:14:58')) ;",
+		},
+		{
+			name:     "SYSDATE",
+			input:    "SELECT SYSDATE FROM dual;",
+			expected: "SELECT CURRENT_TIMESTAMP(0) ;",
+		},
+		{
+			name:     "SYSTIMESTAMP",
+			input:    "SELECT SYSTIMESTAMP FROM dual;",
+			expected: "SELECT CURRENT_TIMESTAMP ;",
+		},
+		{
+			name:     "String Concatenation",
+			input:    "SELECT 'Hello' || ' ' || 'World' FROM dual;",
+			expected: "SELECT CONCAT('Hello', ' ', 'World') ;",
+		},
+		{
+			name:     "ROWNUM",
+			input:    "SELECT * FROM employees WHERE ROWNUM <= 10;",
+			expected: "SELECT * FROM employees LIMIT 10;",
+		},
+		{
+			name:     "MINUS",
+			input:    "SELECT id FROM table1 MINUS SELECT id FROM table2;",
+			expected: "SELECT id FROM table1 EXCEPT SELECT id FROM table2;",
+		},
+		{
+			name:     "NCHAR Type",
+			input:    "CREATE TABLE test (name NCHAR(10));",
+			expected: "CREATE IF NOT EXISTS TABLE test (name CHAR(10));",
+		},
+		{
+			name:     "NVARCHAR2 Type",
+			input:    "CREATE TABLE test (name NVARCHAR2(50));",
+			expected: "CREATE IF NOT EXISTS TABLE test (name VARCHAR(50));",
+		},
+		{
+			name:     "CLOB Type",
+			input:    "CREATE TABLE test (content CLOB);",
+			expected: "CREATE IF NOT EXISTS TABLE test (content TEXT);",
+		},
 	}
 
 	for _, tt := range tests {
