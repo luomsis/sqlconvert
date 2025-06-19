@@ -214,6 +214,61 @@ func TestOra2pg(t *testing.T) {
 			input:    "SELECT INSTR('Hello World', 'o', 1, 2) FROM dual;",
 			expected: "SELECT POSITION('o' IN SUBSTRING('Hello World' FROM POSITION('o' IN 'Hello World') + 1)) + POSITION('o' IN 'Hello World') ;",
 		},
+		{
+			name:     "NVL Function",
+			input:    "SELECT NVL(commission, 0) FROM employees;",
+			expected: "SELECT COALESCE(commission, 0) FROM employees;",
+		},
+		{
+			name:     "NVL2 Function",
+			input:    "SELECT NVL2(commission, commission, 0) FROM employees;",
+			expected: "SELECT CASE WHEN commission IS NOT NULL THEN commission ELSE 0 END FROM employees;",
+		},
+		{
+			name:     "DECODE Function",
+			input:    "SELECT DECODE(job, 'MANAGER', 'Manager', 'DEVELOPER', 'Developer', 'Unknown') FROM employees;",
+			expected: "SELECT CASE job WHEN 'MANAGER' THEN 'Manager' WHEN 'DEVELOPER' THEN 'Developer' ELSE 'Unknown' END FROM employees;",
+		},
+		{
+			name:     "ADD_MONTHS Function",
+			input:    "SELECT ADD_MONTHS(hire_date, 6) FROM employees;",
+			expected: "SELECT hire_date + INTERVAL '6 month' FROM employees;",
+		},
+		{
+			name:     "MONTHS_BETWEEN Function",
+			input:    "SELECT MONTHS_BETWEEN(SYSDATE, hire_date) FROM employees;",
+			expected: "SELECT EXTRACT(YEAR FROM AGE(CURRENT_TIMESTAMP(0), hire_date)) * 12 + EXTRACT(MONTH FROM AGE(CURRENT_TIMESTAMP(0), hire_date)) FROM employees;",
+		},
+		{
+			name:     "LAST_DAY Function",
+			input:    "SELECT LAST_DAY(SYSDATE) FROM dual;",
+			expected: "SELECT (DATE_TRUNC('MONTH', CURRENT_TIMESTAMP(0)) + INTERVAL '1 MONTH - 1 day')::DATE ;",
+		},
+		{
+			name:     "NEXT_DAY Function",
+			input:    "SELECT NEXT_DAY(SYSDATE, 'FRIDAY') FROM dual;",
+			expected: "SELECT CURRENT_TIMESTAMP(0) + (7 + CAST('FRIDAY' AS INT) - EXTRACT(DOW FROM CURRENT_TIMESTAMP(0)))::INTEGER % 7 + 1 ;",
+		},
+		{
+			name:     "EMPTY_BLOB Function",
+			input:    "INSERT INTO documents (id, doc) VALUES (1, EMPTY_BLOB());",
+			expected: "INSERT INTO documents (id, doc) VALUES (1, ''::BYTEA);",
+		},
+		{
+			name:     "EMPTY_CLOB Function",
+			input:    "INSERT INTO documents (id, description) VALUES (1, EMPTY_CLOB());",
+			expected: "INSERT INTO documents (id, description) VALUES (1, ''::TEXT);",
+		},
+		{
+			name:     "REGEXP_LIKE Function",
+			input:    "SELECT * FROM employees WHERE REGEXP_LIKE(email, '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$', 'i');",
+			expected: "SELECT * FROM employees WHERE email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$';",
+		},
+		{
+			name:     "REGEXP_REPLACE Function",
+			input:    "SELECT REGEXP_REPLACE(phone_number, '[[:punct:]]', '') FROM employees;",
+			expected: "SELECT REGEXP_REPLACE(phone_number, '[[:punct:]]', '', 'g') FROM employees;",
+		},
 	}
 
 	for _, tt := range tests {

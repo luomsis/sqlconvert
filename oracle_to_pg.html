@@ -1,0 +1,1359 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+			<meta http-equiv="Content-Style-Type" content="text/css" />
+			<meta name="generator" content="DokuWiki snapshot? unknown" />
+<meta name="robots" content="index,follow" />
+<meta name="date" content="2025-02-19T16:24:47+0000" />
+<meta name="keywords" content="oracle-to-postgresql" />
+<meta name="description" content="SQLines tools can help you transfer data, convert database schema (DDL), views, PL/SQL stored procedures, functions, packages, triggers, queries and SQL scripts from Oracle to PostgreSQL (Postgres).   	*  SQLines SQL Converter - SQL Scripts Conversion and Assessment tool.   Try Online 	*  SQLines Data - Data Transfer, Schema Migration and Validation tool" />
+<link rel="search" type="application/opensearchdescription+xml" href="/lib/exe/opensearch.php" title="SQLines Tools" />
+<link rel="start" href="/" />
+<link rel="contents" href="/oracle-to-postgresql?do=index" title="Index" />
+<link rel="alternate" type="application/rss+xml" title="Recent Changes" href="/feed.php" />
+<link rel="alternate" type="application/rss+xml" title="Current Namespace" href="/feed.php?mode=list&amp;ns=" />
+<link rel="alternate" type="text/html" title="Plain HTML" href="/_export/xhtml/oracle-to-postgresql" />
+<link rel="canonical" href="https://www.sqlines.com/oracle-to-postgresql" />
+<link rel="stylesheet" media="all" type="text/css" href="/lib/exe/css.php?s=all&amp;t=r7throot7&amp;tseed=1620315559" />
+<link rel="stylesheet" media="screen" type="text/css" href="/lib/exe/css.php?t=r7throot7&amp;tseed=1620315559" />
+<link rel="stylesheet" media="print" type="text/css" href="/lib/exe/css.php?s=print&amp;t=r7throot7&amp;tseed=1620315559" />
+<script type="text/javascript" charset="utf-8" ><!--//--><![CDATA[//><!--
+var NS='';var JSINFO = {"id":"oracle-to-postgresql","namespace":""};
+//--><!]]></script>
+<script type="text/javascript" charset="utf-8" src="/lib/exe/js.php?tseed=1620315559" ></script>
+			<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
+			<script async src="https://www.googletagmanager.com/gtag/js?id=G-P1YRJFD61V"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-P1YRJFD61V');
+</script>
+	<title>Oracle to PostgreSQL Migration - SQLines Tools</title>
+	</head>
+	<body>
+		<!-- DokuWiki -->
+		<div id="dokuwiki">
+		
+			<!-- Header -->
+			<div id="header">
+				<!--<a href="/"  name="dokuwiki__top" id="dokuwiki__top" accesskey="h" title="[ALT+H]"><img src="/lib/tpl/r7throot7/images/logo.jpg" id="logo" alt="SQLines Tools"/></a>-->
+			
+				<!-- Menu -->
+				<div class="menu">
+					<ul>
+<li class="level1"><div class="li"> <a href="/home" class="wikilink1" title="home">Home</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/why" class="wikilink1" title="why">Why SQLines</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/download" class="wikilink1" title="download">Download</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/purchase" class="wikilink1" title="purchase">Purchase</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/partners" class="wikilink1" title="partners">Partners</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/case-studies" class="wikilink1" title="case-studies">Case Studies</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/about" class="wikilink1" title="about">About</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/contact-us" class="wikilink1" title="contact-us">Contact Us</a></div>
+</li>
+</ul>
+				</div>
+				<!-- /Menu -->
+			
+			</div>
+			<!-- /Header -->
+			
+			
+			<!-- Body -->
+			<div id="body">
+  						
+								
+				<!-- Sidebar -->
+				<div class="sidebar">
+					
+					<!-- search -->
+					<!-- <div class="search"><form action="/" accept-charset="utf-8" class="search" id="dw__search"><div class="no"><input type="hidden" name="do" value="search" /><input type="text" id="qsearch__in" accesskey="f" name="id" class="edit" title="[F]" /><input type="submit" value="Search" class="button" title="Search" /><div id="qsearch__out" class="ajax_qsearch JSpopup"></div></div></form></div> -->
+					
+					<!-- tpl_sidebar -->
+					
+<p>
+
+<a href="https://www.sqlines.com/online" class="media" title="https://www.sqlines.com/online"  rel="nofollow"><img src="/_media/convert_online.jpg" class="media" title="Convert Online" alt="Convert Online" /></a>
+</p>
+
+
+
+<h3><a name="sqlines-sql-converter" id="sqlines-sql-converter">SQLines SQL Converter</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/overview" class="wikilink1" title="overview">Overview</a><br/>
+
+<a href="/cmd" class="wikilink1" title="cmd">Command Line</a><br/>
+
+<a href="/cfg" class="wikilink1" title="cfg">Configuration File</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "SQLines SQL Converter" [77-189] -->
+<h3><a name="sqlines-data" id="sqlines-data">SQLines Data</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/sqldata" class="wikilink1" title="sqldata">Overview</a><br/>
+
+<a href="/sqldata_cmd" class="wikilink1" title="sqldata_cmd">Command Line</a><br/>
+
+<a href="/sqldata_cfg" class="wikilink1" title="sqldata_cfg">Configuration File</a><br/>
+
+<a href="/sqldata_connection" class="wikilink1" title="sqldata_connection">Connection Strings</a><br/>
+
+<a href="/sqldata_validation" class="wikilink1" title="sqldata_validation">Data Validation</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "SQLines Data" [190-395] -->
+<h3><a name="migration-to-mariadb" id="migration-to-mariadb">Migration to MariaDB</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/db2-to-mariadb" class="wikilink1" title="db2-to-mariadb">IBM DB2 to MariaDB</a><br/>
+
+<a href="/informix-to-mariadb" class="wikilink1" title="informix-to-mariadb">Informix to MariaDB</a><br/>
+
+<a href="/mysql-to-mariadb" class="wikilink1" title="mysql-to-mariadb">MySQL to MariaDB</a><br/>
+
+<a href="/oracle-to-mariadb" class="wikilink1" title="oracle-to-mariadb">Oracle to MariaDB</a><br/>
+
+<a href="/postgresql-to-mariadb" class="wikilink1" title="postgresql-to-mariadb">PostgreSQL to MariaDB</a><br/>
+
+<a href="/sql-server-to-mariadb" class="wikilink1" title="sql-server-to-mariadb">SQL Server to MariaDB</a><br/>
+
+<a href="/sybase-to-mariadb" class="wikilink1" title="sybase-to-mariadb">Sybase ASE to MariaDB</a><br/>
+
+<a href="/sybase-asa-to-mariadb" class="wikilink1" title="sybase-asa-to-mariadb">Sybase ASA to MariaDB</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "Migration to MariaDB" [396-800] -->
+<h3><a name="migration-to-mysql" id="migration-to-mysql">Migration to MySQL</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/db2-to-mysql" class="wikilink1" title="db2-to-mysql">IBM DB2 to MySQL</a><br/>
+
+<a href="/informix-to-mysql" class="wikilink1" title="informix-to-mysql">Informix to MySQL</a><br/>
+
+<a href="/mariadb-to-mysql" class="wikilink1" title="mariadb-to-mysql">MariaDB to MySQL</a><br/>
+
+<a href="/oracle-to-mysql" class="wikilink1" title="oracle-to-mysql">Oracle to MySQL</a><br/>
+
+<a href="/sql-server-to-mysql" class="wikilink1" title="sql-server-to-mysql">SQL Server to MySQL</a><br/>
+
+<a href="/sybase-to-mysql" class="wikilink1" title="sybase-to-mysql">Sybase ASE to MySQL</a><br/>
+
+<a href="/sybase-asa-to-mysql" class="wikilink1" title="sybase-asa-to-mysql">Sybase ASA to MySQL</a><br/>
+
+<a href="/postgresql-to-mysql" class="wikilink1" title="postgresql-to-mysql">PostgreSQL  to MySQL</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "Migration to MySQL" [801-1176] -->
+<h3><a name="migration-to-postgresql" id="migration-to-postgresql">Migration to PostgreSQL</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/db2-to-postgresql" class="wikilink1" title="db2-to-postgresql">IBM DB2 to PostgreSQL</a><br/>
+
+<a href="/informix-to-postgresql" class="wikilink1" title="informix-to-postgresql">Informix to PostgreSQL</a><br/>
+
+<a href="/mysql-to-postgresql" class="wikilink1" title="mysql-to-postgresql">MySQL to PostgreSQL</a><br/>
+
+<a href="/oracle-to-postgresql" class="wikilink1" title="oracle-to-postgresql">Oracle to PostgreSQL</a><br/>
+
+<a href="/sql-server-to-postgresql" class="wikilink1" title="sql-server-to-postgresql">SQL Server to PostgreSQL</a><br/>
+
+<a href="/sybase-to-postgresql" class="wikilink1" title="sybase-to-postgresql">Sybase ASE to PostgreSQL</a><br/>
+
+<a href="/sybase-asa-to-postgresql" class="wikilink1" title="sybase-asa-to-postgresql">Sybase ASA to PostgreSQL</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "Migration to PostgreSQL" [1177-1575] -->
+<h3><a name="migration-to-sql-server" id="migration-to-sql-server">Migration to SQL Server</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/db2-to-sql-server" class="wikilink1" title="db2-to-sql-server">IBM DB2 to SQL Server</a><br/>
+
+<a href="/informix-to-sql-server" class="wikilink1" title="informix-to-sql-server">Informix to SQL Server</a><br/>
+
+<a href="/mysql-to-sql-server" class="wikilink1" title="mysql-to-sql-server">MySQL to SQL Server</a><br/>
+
+<a href="/oracle-to-sql-server" class="wikilink1" title="oracle-to-sql-server">Oracle to SQL Server</a><br/>
+
+<a href="/postgresql-to-sql-server" class="wikilink1" title="postgresql-to-sql-server">PostgreSQL to SQL Server</a><br/>
+
+<a href="/sybase-to-sql-server" class="wikilink1" title="sybase-to-sql-server">Sybase ASE to SQL Server</a><br/>
+
+<a href="/sybase-asa-to-sql-server" class="wikilink1" title="sybase-asa-to-sql-server">Sybase ASA to SQL Server</a><br/>
+
+<a href="/sybase-ads-to-sql-server" class="wikilink1" title="sybase-ads-to-sql-server">Sybase ADS to SQL Server</a><br/>
+
+</p>
+
+</div>
+<!-- SECTION "Migration to SQL Server" [1576-2036] -->
+<h3><a name="migration-to-oracle" id="migration-to-oracle">Migration to Oracle</a></h3>
+<div class="level3">
+
+<p>
+
+<a href="/db2-to-oracle" class="wikilink1" title="db2-to-oracle">IBM DB2 to Oracle</a><br/>
+
+<a href="/informix-to-oracle" class="wikilink1" title="informix-to-oracle">Informix to Oracle</a><br/>
+
+<a href="/postgresql-to-oracle" class="wikilink1" title="postgresql-to-oracle">PostgreSQL to Oracle</a><br/>
+
+<a href="/sybase-to-oracle" class="wikilink1" title="sybase-to-oracle">Sybase ASE to Oracle</a><br/>
+
+<a href="/sybase-asa-to-oracle" class="wikilink1" title="sybase-asa-to-oracle">Sybase ASA to Oracle</a><br/>
+
+<a href="/sql-server-to-oracle" class="wikilink1" title="sql-server-to-oracle">SQL Server to Oracle</a><br/>
+
+<a href="/mysql-to-oracle" class="wikilink1" title="mysql-to-oracle">MySQL to Oracle</a><br/>
+
+<a href="/mariadb-to-oracle" class="wikilink1" title="mariadb-to-oracle">MariaDB to Oracle</a><br/>
+
+</p>
+
+
+
+</div>
+<!-- SECTION "Migration to Oracle" [2037-] -->					<!-- /tpl_sidebar -->
+		
+				<br>
+				</div>
+				<!-- /Sidebar -->
+				
+				<!-- Content -->
+				<div id="Content">
+				
+					<!-- Breadcrumbs -->
+					<div class="breadcrumbs"></div>
+					<!-- /Breadcrumbs -->
+					
+					
+
+
+<h1><a name="oracle-to-postgresql-migration" id="oracle-to-postgresql-migration">Oracle to PostgreSQL Migration</a></h1>
+<div class="level1">
+
+<p>
+
+SQLines tools can help you transfer data, convert database schema (DDL), views, PL/<acronym title="Structured Query Language">SQL</acronym> stored procedures, functions, packages, triggers, queries and <acronym title="Structured Query Language">SQL</acronym> scripts from Oracle to PostgreSQL (Postgres).
+
+</p>
+<ul>
+<li class="level1"><div class="li"> <a href="/overview" class="wikilink1" title="overview">SQLines SQL Converter</a> - <acronym title="Structured Query Language">SQL</acronym> Scripts Conversion and Assessment tool.   <a href="http://www.sqlines.com/online" class="urlextern" title="http://www.sqlines.com/online"  rel="nofollow">Try Online</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="/sqldata/oracle-to-postgresql" class="wikilink1" title="sqldata:oracle-to-postgresql">SQLines Data</a> - Data Transfer, Schema Migration and Validation tool</div>
+</li>
+</ul>
+
+<p>
+
+<strong>Databases:</strong>
+
+</p>
+<ul>
+<li class="level1"><div class="li"> Oracle 23, 22c, 21c, 19c, 18c, 12c, 11g, 10g and 9i</div>
+</li>
+<li class="level1"><div class="li"> PostgreSQL 17.x, 16.x, 15.x, 14.x, 13.x, 12.x, 11.x, 10.x and 9.x  </div>
+</li>
+</ul>
+
+</div>
+
+<h2><a name="migration-reference" id="migration-reference">Migration Reference</a></h2>
+<div class="level2">
+<ul>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#sql-language-elements" class="wikilink1" title="oracle-to-postgresql">SQL Language Elements</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#data-types" class="wikilink1" title="oracle-to-postgresql">Data Types</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#built-in-sql-functions" class="wikilink1" title="oracle-to-postgresql">Built-in SQL Functions</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#alter-table-statement" class="wikilink1" title="oracle-to-postgresql">ALTER TABLE</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#comment-statement" class="wikilink1" title="oracle-to-postgresql">COMMENT</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-index-statement" class="wikilink1" title="oracle-to-postgresql">CREATE INDEX</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-table-statement" class="wikilink1" title="oracle-to-postgresql">CREATE TABLE</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-function-statement" class="wikilink1" title="oracle-to-postgresql">CREATE FUNCTION</a></span> </div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-procedure-statement" class="wikilink1" title="oracle-to-postgresql">CREATE PROCEDURE</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-sequence-statement" class="wikilink1" title="oracle-to-postgresql">CREATE SEQUENCE</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-trigger-statement" class="wikilink1" title="oracle-to-postgresql">CREATE TRIGGER</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-type-statement" class="wikilink1" title="oracle-to-postgresql">CREATE TYPE</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#create-view-statement" class="wikilink1" title="oracle-to-postgresql">CREATE VIEW</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#insert-statement" class="wikilink1" title="oracle-to-postgresql">INSERT</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#select-statement" class="wikilink1" title="oracle-to-postgresql">SELECT</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#anonymous-block" class="wikilink1" title="oracle-to-postgresql">Anonymous Block</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#plsql-statements" class="wikilink1" title="oracle-to-postgresql">PL/SQL Statements</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#built-in-plsql-packages" class="wikilink1" title="oracle-to-postgresql">Built-in PL/SQL Packages</a></span></div>
+</li>
+<li class="level1"><div class="li"> <span class="curid"><a href="/oracle-to-postgresql#sql-plus-commands" class="wikilink1" title="oracle-to-postgresql">SQL*Plus Commands</a></span></div>
+</li>
+</ul>
+
+</div>
+
+<h2><a name="sql-language-elements" id="sql-language-elements">SQL Language Elements</a></h2>
+<div class="level2">
+
+<p>
+
+Operators:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/string_concat" class="wikilink1" title="oracle-to-postgresql:string_concat">str1 || str2 || ...</a> </td><td class="col2"> String concatenation, NULLs ignored </td><td class="col3"> <a href="/oracle-to-postgresql/string_concat" class="wikilink1" title="oracle-to-postgresql:string_concat">CONCAT(str1, str2, ...)</a> </td><td class="col4"> <a href="/oracle-to-postgresql/string_concat" class="wikilink1" title="oracle-to-postgresql:string_concat">str1 || str2 || ...</a> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <a href="/oracle-to-postgresql/datetime_arithmetic" class="wikilink1" title="oracle-to-postgresql:datetime_arithmetic">+ and - Operators for datetime</a> </td><td class="col2"> Datetime arithmetic </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/datetime_arithmetic" class="wikilink1" title="oracle-to-postgresql:datetime_arithmetic">Interval expressions</a> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+</table>
+
+<p>
+
+Special variables:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <em>column</em>%TYPE </td><td class="col2"> Derived data type attribute </td><td class="col3"> <em>column</em>%TYPE </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> SYS_REFCURSOR </td><td class="col2"> Cursor reference </td><td class="col3"> REFCURSOR </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> <acronym title="Structured Query Language">SQL</acronym>%ROWCOUNT </td><td class="col2"> Number of rows affected </td><td class="col3"> GET DIAGNOSTICS <em>var</em> = ROW_COUNT </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> <acronym title="Structured Query Language">SQL</acronym>%NOTFOUND </td><td class="col2"> No rows affected </td><td class="col3"> NOT FOUND </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> <acronym title="Structured Query Language">SQL</acronym>%FOUND </td><td class="col2"> One or more rows affected </td><td class="col3"> FOUND </td>
+	</tr>
+</table>
+
+<p>
+
+Expressions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/string_int_campare" class="wikilink1" title="oracle-to-postgresql:string_int_campare">&#039;0&#039; &lt; 1</a> </td><td class="col2"> String and integer comparison </td><td class="col3"> <a href="/oracle-to-postgresql/string_int_campare" class="wikilink1" title="oracle-to-postgresql:string_int_campare">&#039;0&#039; &lt; 1</a> </td><td class="col4" colspan="2"> Cast may be required  <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> 1/2 = 0.5 </td><td class="col2"> Division of integers produces decimal </td><td class="col3"> 1/2 = 0 </td><td class="col4"> 1/2::FLOAT = 0.5 </td><td class="col5"> Casting is required <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="data-types" id="data-types">Data Types</a></h2>
+<div class="level2">
+
+<p>
+
+Character data types:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1 leftalign"> <a href="/oracle-to-postgresql/char" class="wikilink1" title="oracle-to-postgresql:char">CHAR(n), CHARACTER(n)</a>  </td><td class="col2"> Fixed-length string, 1 ⇐ <em>n</em> ⇐ 2000 </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/char" class="wikilink1" title="oracle-to-postgresql:char">CHAR(n), CHARACTER(n)</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <a href="/oracle/datatypes/clob" class="wikilink1" title="oracle:datatypes:clob">CLOB</a> </td><td class="col2"> Character large object, 4 <acronym title="Gigabyte">GB</acronym> </td><td class="col3" colspan="2"> TEXT </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> LONG </td><td class="col2"> Character data, 2 <acronym title="Gigabyte">GB</acronym> </td><td class="col3" colspan="2"> TEXT </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> NCHAR(<em>n</em>) </td><td class="col2"> Fixed-length UTF-8 string, 1 ⇐ <em>n</em> ⇐ 2000 </td><td class="col3" colspan="2"> CHAR(<em>n</em>) <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> NCHAR VARYING(<em>n</em>) </td><td class="col2"> Varying-length UTF-8 string, 1 ⇐ <em>n</em> ⇐ 4000 </td><td class="col3" colspan="2"> VARCHAR(<em>n</em>) <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 6 </td><td class="col1"> NCLOB </td><td class="col2"> Variable-length Unicode string, ⇐ 4 <acronym title="Gigabyte">GB</acronym> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td><td class="col3" colspan="2"> TEXT </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> 7 </td><td class="col1"> NVARCHAR2(<em>n</em>) </td><td class="col2"> Varying-length UTF-8 string, 1 ⇐ <em>n</em> ⇐ 4000 </td><td class="col3" colspan="2"> VARCHAR(<em>n</em>) <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 8 </td><td class="col1"> VARCHAR(<em>n</em>) </td><td class="col2"> Synonym for VARCHAR2 </td><td class="col3" colspan="2"> VARCHAR(<em>n</em>) </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> 9 </td><td class="col1"> <a href="/oracle-to-postgresql/varchar2" class="wikilink1" title="oracle-to-postgresql:varchar2">VARCHAR2(n)</a> </td><td class="col2"> Variable-length string, 1 ⇐ <em>n</em> ⇐ 32767 </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/varchar2" class="wikilink1" title="oracle-to-postgresql:varchar2">VARCHAR(n)</a> </td>
+	</tr>
+</table>
+
+<p>
+
+Numeric data types:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> BINARY_FLOAT </td><td class="col2"> 32-bit floating-point number </td><td class="col3" colspan="2"> REAL </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> BINARY_DOUBLE </td><td class="col2"> 64-bit floating-point number </td><td class="col3" colspan="2"> DOUBLE PRECISION </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> DECIMAL(<em>p,s</em>), DEC(<em>p,s</em>) </td><td class="col2"> Fixed-point number </td><td class="col3" colspan="2"> DECIMAL(<em>p,s</em>), DEC(<em>p,s</em>) </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> DOUBLE PRECISION </td><td class="col2"> Synonym for FLOAT(126) </td><td class="col3" colspan="2"> DOUBLE PRECISION </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> FLOAT(<em>p</em>) </td><td class="col2"> Floating-point number </td><td class="col3" colspan="2"> DOUBLE PRECISION </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 6 </td><td class="col1"> INTEGER, INT </td><td class="col2"> 38 digits integer </td><td class="col3" colspan="2"> DECIMAL(38) </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0" rowspan="5"> 7 </td><td class="col1" rowspan="5"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">NUMBER(p,0),  NUMBER(p)</a> </td><td class="col2 leftalign"> 8-bit integer, 1 ⇐ <em>p</em> &lt; 3  </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">SMALLINT</a> </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 16-bit integer, 3 ⇐ <em>p</em> &lt; 5 </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">SMALLINT</a> </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> 32-bit integer, 5 ⇐ <em>p</em> &lt; 9 </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">INT</a> </td>
+	</tr>
+	<tr class="row10">
+		<td class="col0"> 64-bit integer, 9 ⇐ <em>p</em> &lt; 19 </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">BIGINT</a> </td>
+	</tr>
+	<tr class="row11">
+		<td class="col0"> Large integer, 19 ⇐ <em>p</em> ⇐ 38 </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">DECIMAL(p)</a> </td>
+	</tr>
+	<tr class="row12">
+		<td class="col0"> 8 </td><td class="col1"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">NUMBER(p,s)</a> </td><td class="col2"> Fixed-point number, s &gt; 0 </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">DECIMAL(p,s)</a> </td>
+	</tr>
+	<tr class="row13">
+		<td class="col0"> 9 </td><td class="col1"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">NUMBER, NUMBER(*)</a> </td><td class="col2"> Exact floating-point number </td><td class="col3"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">DECIMAL</a> </td><td class="col4"> <a href="/oracle-to-postgresql/number" class="wikilink1" title="oracle-to-postgresql:number">DOUBLE PRECISION</a> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row14">
+		<td class="col0"> 10 </td><td class="col1"> NUMERIC(<em>p,s</em>) </td><td class="col2"> Fixed-point number </td><td class="col3" colspan="2"> NUMERIC(<em>p,s</em>) </td>
+	</tr>
+	<tr class="row15">
+		<td class="col0"> 11 </td><td class="col1"> REAL </td><td class="col2"> Synonym for FLOAT(63) </td><td class="col3" colspan="2"> REAL </td>
+	</tr>
+	<tr class="row16">
+		<td class="col0"> 12 </td><td class="col1"> SMALLINT </td><td class="col2"> 38 digits integer </td><td class="col3" colspan="2"> DECIMAL(38) </td>
+	</tr>
+</table>
+
+<p>
+
+Date and time data types:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1 leftalign"> <a href="/oracle/datatypes/date" class="wikilink1" title="oracle:datatypes:date">DATE</a>  </td><td class="col2"> Date and time </td><td class="col3" colspan="2"> TIMESTAMP(0) </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> INTERVAL YEAR(<em>p</em>) TO MONTH </td><td class="col2"> Date interval </td><td class="col3" colspan="2"> INTERVAL YEAR TO MONTH </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> INTERVAL DAY(<em>p</em>) TO SECOND(<em>s</em>) </td><td class="col2"> Day and time interval </td><td class="col3" colspan="2"> INTERVAL DAY TO SECOND(<em>s</em>) </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> TIMESTAMP(<em>p</em>) </td><td class="col2"> Date and time with fraction </td><td class="col3" colspan="2"> TIMESTAMP(<em>p</em>) </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> TIMESTAMP(<em>p</em>) WITH TIME ZONE </td><td class="col2"> Date and time with fraction and time zone </td><td class="col3" colspan="2"> TIMESTAMP(<em>p</em>) WITH TIME ZONE </td>
+	</tr>
+</table>
+
+<p>
+
+Binary data types:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> BLOB </td><td class="col2"> Binary large object, ⇐ 4G <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td><td class="col3" colspan="2"> BYTEA </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> LONG RAW </td><td class="col2"> Binary data, ⇐ 2G </td><td class="col3" colspan="2"> BYTEA </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> <a href="/oracle/datatypes/raw" class="wikilink1" title="oracle:datatypes:raw">RAW(n)</a> </td><td class="col2"> Variable-length binary string, 1 ⇐ n ⇐ 2000 </td><td class="col3" colspan="2"> BYTEA </td>
+	</tr>
+</table>
+
+<p>
+
+Other data types:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> BFILE </td><td class="col2"> Pointer to binary file, ⇐ 4G </td><td class="col3" colspan="2"> VARCHAR(255) </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> ROWID </td><td class="col2"> Physical row address </td><td class="col3" colspan="2"> CHAR(10) </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> SYS_REFCURSOR </td><td class="col2"> Cursor reference </td><td class="col3" colspan="2"> REFCURSOR </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> UROWID(<em>n</em>) </td><td class="col2"> Logical row addresses, 1 ⇐ <em>n</em> ⇐ 4000 </td><td class="col3" colspan="2"> VARCHAR(<em>n</em>) </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> XMLTYPE </td><td class="col2"> <acronym title="Extensible Markup Language">XML</acronym> data </td><td class="col3" colspan="2"> <acronym title="Extensible Markup Language">XML</acronym> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="built-in-sql-functions" id="built-in-sql-functions">Built-in SQL Functions</a></h2>
+<div class="level2">
+
+<p>
+
+Converting string functions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0" rowspan="3"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/instr" class="wikilink1" title="oracle-to-postgresql:instr">INSTR(str, substr)</a> </td><td class="col2" rowspan="3"> Get <em>position</em> of <em>substring</em> </td><td class="col3"> <a href="/oracle-to-postgresql/instr" class="wikilink1" title="oracle-to-postgresql:instr">POSITION(substr IN str)</a> </td><td class="col4"> param order <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> <a href="/oracle-to-postgresql/instr" class="wikilink1" title="oracle-to-postgresql:instr">INSTR(str, substr, pos)</a> </td><td class="col1" colspan="2" rowspan="2"> <a href="/oracle-to-postgresql/instr" class="wikilink1" title="oracle-to-postgresql:instr">User-defined function</a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> <a href="/oracle-to-postgresql/instr" class="wikilink1" title="oracle-to-postgresql:instr">INSTR(str, substr, pos, num)</a> </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 2 </td><td class="col1"> <a href="/oracle-to-postgresql/listagg" class="wikilink1" title="oracle-to-postgresql:listagg">LISTAGG(exp, delim)...</a> </td><td class="col2"> Aggregate concatenation </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/listagg" class="wikilink1" title="oracle-to-postgresql:listagg">STRING_AGG(exp, delim)</a> </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0" rowspan="2"> 3 </td><td class="col1"> TO_CHAR(<em>expr, format</em>) </td><td class="col2" rowspan="2"> Convert to string </td><td class="col3" colspan="2"> TO_CHAR(<em>expr, format</em>) </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> TO_CHAR(<em>expr</em>) </td><td class="col1" colspan="2"> <em>expr</em>::text </td>
+	</tr>
+</table>
+
+<p>
+
+Converting datetime functions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/from_tz" class="wikilink1" title="oracle-to-postgresql:from_tz">FROM_TZ(timestamp, timezone)</a> </td><td class="col2"> Setting <em>timezone</em> for <em>timestamp</em> </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/from_tz" class="wikilink1" title="oracle-to-postgresql:from_tz">timestamp AT TIME ZONE  timezone</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> SYSDATE </td><td class="col2">Get current datetime (up to seconds) <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td><td class="col3" colspan="2"> CURRENT_TIMESTAMP(0) </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> <a href="/oracle-to-postgresql/systimestamp" class="wikilink1" title="oracle-to-postgresql:systimestamp">SYSTIMESTAMP</a> </td><td class="col2"> Get current datetime </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/systimestamp" class="wikilink1" title="oracle-to-postgresql:systimestamp">CURRENT_TIMESTAMP</a> </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> <a href="/oracle-to-postgresql/trunc_datetime" class="wikilink1" title="oracle-to-postgresql:trunc_datetime">TRUNC(datetime, &#039;unit&#039;)</a> </td><td class="col2"> Truncate <em>datetime</em> to <em>unit</em> </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/trunc_datetime" class="wikilink1" title="oracle-to-postgresql:trunc_datetime">DATE_TRUNC(&#039;unit&#039;, datetime)</a> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+</table>
+
+<p>
+
+Converting JSON functions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/json_table" class="wikilink1" title="oracle-to-postgresql:json_table">JSON_TABLE(exp, jpath, columns ...)</a> </td><td class="col2"> Extract rows from JSON array </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/json_table" class="wikilink1" title="oracle-to-postgresql:json_table">LATERAL and JSON Expressions</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> JSON_VALUE(<em>json, jpath</em>) </td><td class="col2"> Extract JSON value </td><td class="col3"> JSONB_PATH_QUERY(<em>json, jpath</em>) </td>
+	</tr>
+</table>
+
+<p>
+
+Converting <acronym title="Extensible Markup Language">XML</acronym> functions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/extract_xml" class="wikilink1" title="oracle-to-postgresql:extract_xml">EXTRACT(xml_content, xpath)</a> </td><td class="col2"> Extract from <acronym title="Extensible Markup Language">XML</acronym> content </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/extract_xml" class="wikilink1" title="oracle-to-postgresql:extract_xml">EXTRACT(xml_content, xpath)</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <a href="/oracle-to-postgresql/xmlagg" class="wikilink1" title="oracle-to-postgresql:xmlagg">XMLAGG(element [ORDER BY order])</a> </td><td class="col2"> Create <acronym title="Extensible Markup Language">XML</acronym> from elements </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/xmlagg" class="wikilink1" title="oracle-to-postgresql:xmlagg">XMLAGG(element [ORDER BY order])</a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> <a href="/oracle-to-postgresql/xmltype" class="wikilink1" title="oracle-to-postgresql:xmltype">XMLTYPE(content)</a> </td><td class="col2"> Get <acronym title="Extensible Markup Language">XML</acronym> value from string content </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/xmltype" class="wikilink1" title="oracle-to-postgresql:xmltype">XMLPARSE(CONTENT | DOCUMENT content)</a> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="alter-table-statement" id="alter-table-statement">ALTER TABLE Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Adding constraints:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> ALTER TABLE <em>tab</em> ADD [CONSTRAINT <em>cns</em>] … </td><td class="col2"> Named constraint </td><td class="col3"> ALTER TABLE <em>tab</em> ADD [CONSTRAINT <em>cns</em>] … </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> PRIMARY KEY (<em>col, …</em>) </td><td class="col2"> Primary key </td><td class="col3"> PRIMARY KEY (<em>col, …</em>) </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> UNIQUE (<em>col, …</em>) </td><td class="col2"> Unique key </td><td class="col3"> UNIQUE (<em>col, …</em>) </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> CHECK (<em>condition</em>) </td><td class="col2"> Check condition </td><td class="col3"> CHECK (<em>condition</em>) </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> FOREIGN KEY (<em>col, …</em>) REFERENCES <em>tab2</em> (<em>col, …</em>) </td><td class="col2"> Foreign key </td><td class="col3"> FOREIGN KEY (<em>col, …</em>) REFERENCES <em>tab2</em> (<em>col, …</em>) </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="comment-statement" id="comment-statement">COMMENT Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting comments on objects:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> COMMENT ON COLUMN IS &#039;<em>text</em>&#039; </td><td class="col2"> Comment on column </td><td class="col3" colspan="2"> COMMENT ON COLUMN IS &#039;<em>text</em>&#039; </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="create-index-statement" id="create-index-statement">CREATE INDEX Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting indexes:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> CREATE [UNIQUE] INDEX <em>name</em> ON <em>tab</em> </td><td class="col2"> Create an index </td><td class="col3"> CREATE [UNIQUE] INDEX <em>name</em>  ON <em>tab</em> <em>cols</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> (<em>col</em> [ASC | DESC], …) </td><td class="col2"> Index columns </td><td class="col3"> (<em>col</em> [ASC | DESC], …) </td>
+	</tr>
+</table>
+
+<p>
+
+See also <span class="curid"><a href="/oracle-to-postgresql#create-table-statement" class="wikilink1" title="oracle-to-postgresql">Storage clauses</a></span> conversion in CREATE TABLE.
+</p>
+
+</div>
+
+<h2><a name="create-table-statement" id="create-table-statement">CREATE TABLE Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting table definitions:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> CREATE TABLE <em>name</em> </td><td class="col2"> Create a table </td><td class="col3"> CREATE TABLE [IF NOT EXISTS] <em>name</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <em>colname</em>  <span class="curid"><a href="/oracle-to-postgresql#data-types" class="wikilink1" title="oracle-to-postgresql">data_type</a></span> NOT NULL </td><td class="col2"> NOT NULL column constraint </td><td class="col3"> <em>colname</em> <span class="curid"><a href="/oracle-to-postgresql#data-types" class="wikilink1" title="oracle-to-postgresql">data_type</a></span> NOT NULL </td>
+	</tr>
+</table>
+
+<p>
+
+Storage clauses:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> LOGGING </td><td class="col2"> Log operations on table </td><td class="col3"> Removed, logged by default </td>
+	</tr>
+</table>
+
+<p>
+
+For more details, see <span class="curid"><a href="/oracle-to-postgresql#data-types" class="wikilink1" title="oracle-to-postgresql">Data Types</a></span> conversion.
+</p>
+
+</div>
+
+<h2><a name="create-function-statement" id="create-function-statement">CREATE FUNCTION Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting CREATE FUNCTION statement from Oracle to PostgreSQL:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> CREATE OR REPLACE FUNCTION <em>name</em> </td><td class="col3"> CREATE OR REPLACE FUNCTION <em>name</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1" colspan="2"> (<em>param</em> IN | OUT | IN OUT <em>datatype</em> DEFAULT <em>default</em>, …) </td><td class="col3"> (<em>param</em> IN | OUT | INOUT <em>datatype</em> DEFAULT <em>default</em>, …) </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1" colspan="2"> RETURN <em>data_type</em> </td><td class="col3"> RETURN<strong>S</strong> <em>data_type</em> </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1" colspan="2"> DETERMINISTIC </td><td class="col3"> Not supported, removed </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1" colspan="2"> IS | AS </td><td class="col3"> AS $$ </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 6 </td><td class="col1" colspan="2"> <em>function_body</em> </td><td class="col3"> <em>function_body</em> </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> 7 </td><td class="col1" colspan="2"> END <em>proc_name</em>; </td><td class="col3"> END; </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 8 </td><td class="col1" colspan="2"> / </td><td class="col3"> $$ LANGUAGE plpgsql; </td>
+	</tr>
+</table>
+<ul>
+<li class="level1"><div class="li"> <a href="/oracle-to-postgresql/pipelined_function" class="wikilink1" title="oracle-to-postgresql:pipelined_function">Pipelined Table Functions Conversion</a></div>
+</li>
+</ul>
+
+</div>
+
+<h2><a name="create-procedure-statement" id="create-procedure-statement">CREATE PROCEDURE Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting stored procedures:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> CREATE OR REPLACE PROCEDURE <em>name</em> </td><td class="col3"> CREATE OR REPLACE PROCEDURE <em>name</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0" rowspan="2"> 2 </td><td class="col1" colspan="2"> <em>param</em> IN | OUT | IN OUT <em>datatype</em> DEFAULT <em>default</em> </td><td class="col3"> <em>param</em> IN | OUT | INOUT <em>datatype</em> DEFAULT <em>default</em> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0" colspan="2"> <a href="/oracle-to-postgresql/return_sys_refcursor" class="wikilink1" title="oracle-to-postgresql:return_sys_refcursor">param OUT SYS_REFCURSOR</a> </td><td class="col2"> <a href="/oracle-to-postgresql/return_sys_refcursor" class="wikilink1" title="oracle-to-postgresql:return_sys_refcursor">param REFCURSOR ... RETURNS REFCURSOR</a> </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 3 </td><td class="col1" colspan="2"> No () if procedure is without parameters </td><td class="col3"> Empty () are required </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 4 </td><td class="col1" colspan="2"> IS | AS </td><td class="col3"> AS $$ </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 5 </td><td class="col1" colspan="2"> <em>procedure_body</em> </td><td class="col3"> <em>procedure_body</em> </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> 6 </td><td class="col1" colspan="2"> END <em>proc_name</em>; </td><td class="col3"> END; </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 7 </td><td class="col1" colspan="2"> / </td><td class="col3"> $$ LANGUAGE plpgsql; </td>
+	</tr>
+</table>
+
+<p>
+
+Procedure calls:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0" rowspan="2"> 1 </td><td class="col1" colspan="2" rowspan="2"> <em>proc_name</em>(<em>param</em>, …) </td><td class="col3"> PERFORM <em>proc_name</em>(<em>param</em>, …) </td><td class="col4"> From a PL/pgSQL block </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> SELECT <em>proc_name</em>(<em>param</em>, …) </td><td class="col1"> Standalone call </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 2 </td><td class="col1"> <em>proc_name</em>(<em>name</em> =&gt; <em>value</em>, …) </td><td class="col2"> Named parameters </td><td class="col3 leftalign" colspan="2"> <em>proc_name</em>(<em>name</em> =&gt; <em>value</em>, …)  </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="create-sequence-statement" id="create-sequence-statement">CREATE SEQUENCE Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting sequences:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0 leftalign">  </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> CREATE SEQUENCE <em>name</em> </td><td class="col3" colspan="2"> CREATE SEQUENCE [IF NOT EXISTS] <em>name</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> INCREMENT BY <em>num</em> </td><td class="col2"> Positive or negative increment, default is 1 </td><td class="col3" colspan="2"> INCREMENT BY <em>num</em> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> START WITH <em>num</em> </td><td class="col2"> Initial value </td><td class="col3" colspan="2"> START [WITH] <em>num</em> </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0" rowspan="2"> 4 </td><td class="col1"> MAXVALUE <em>num</em> </td><td class="col2"> Maximum value is <em>num</em> </td><td class="col3" colspan="2"> MAXVALUE <em>num</em> </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> NOMAXVALUE </td><td class="col1"> System limit </td><td class="col2" colspan="2"> NO MAXVALUE </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0" rowspan="2"> 5 </td><td class="col1"> MINVALUE <em>num</em> </td><td class="col2"> Minimum value is <em>num</em> </td><td class="col3" colspan="2"> MINVALUE <em>num</em> </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> NOMINVALUE </td><td class="col1"> System limit </td><td class="col2" colspan="2"> NO MINVALUE </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0" rowspan="2"> 6 </td><td class="col1"> CYCLE </td><td class="col2"> Reuse values  after reaching the limit </td><td class="col3" colspan="2"> CYCLE </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> NOCYCLE </td><td class="col1"> No reuse, this is default </td><td class="col2" colspan="2"> NO CYCLE </td>
+	</tr>
+	<tr class="row10">
+		<td class="col0" rowspan="2"> 7 </td><td class="col1"> CACHE <em>num</em> </td><td class="col2"> Cache <em>num</em> values, default is 20 </td><td class="col3"> CACHE <em>num</em> </td><td class="col4"> Default is 1 </td>
+	</tr>
+	<tr class="row11">
+		<td class="col0"> NOCACHE </td><td class="col1"> Values are not preallocated </td><td class="col2" colspan="2"> CACHE 1 </td>
+	</tr>
+	<tr class="row12">
+		<td class="col0" rowspan="2"> 8 </td><td class="col1"> ORDER </td><td class="col2"> Guarantee numbers in order of requests </td><td class="col3" colspan="2"> Option not supported, commented  <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row13">
+		<td class="col0"> NOORDER </td><td class="col1"> No guarantee, this is default </td><td class="col2" colspan="2"> Removed as it is default </td>
+	</tr>
+</table>
+
+<p>
+
+By default MAXVALUE is 9999999999999999999999999999 in Oracle, and this value is out of range for type BIGINT in PostgreSQL, so MAXVALUE is commented in such case.
+</p>
+
+</div>
+
+<h2><a name="create-trigger-statement" id="create-trigger-statement">CREATE TRIGGER Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting triggers:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/create_trigger" class="wikilink1" title="oracle-to-postgresql:create_trigger">CREATE TRIGGER</a> </td><td class="col2"> Create a trigger </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/create_trigger" class="wikilink1" title="oracle-to-postgresql:create_trigger">CREATE FUNCTION ... RETURNS TRIGGER</a> <br/>
+<a href="/oracle-to-postgresql/create_trigger" class="wikilink1" title="oracle-to-postgresql:create_trigger">CREATE TRIGGER … EXECUTE FUNCTION</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <em>schema.name</em> </td><td class="col2"> Trigger name </td><td class="col3"> <em>name</em> </td><td class="col4"> Cannot be schema-qualified, <br/>
+uses table schema <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1" colspan="2"> BEFORE | AFTER | INSTEAD OF </td><td class="col3" colspan="2"> BEFORE | AFTER | INSTEAD OF </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1" colspan="2"> INSERT OR UPDATE OR DELETE </td><td class="col3" colspan="2"> INSERT OR UPDATE OR DELETE </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> REFERENCING NEW AS … <br/>
+OLD AS … </td><td class="col2"> Column reference predicates </td><td class="col3" colspan="2"> REFERENCING NEW TABLE AS … <br/>
+OLD TABLE AS … </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 6 </td><td class="col1"> :NEW.<em>column</em> </td><td class="col2"> New column value reference </td><td class="col3" colspan="2"> NEW.<em>column</em> </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> 7 </td><td class="col1"> :OLD.<em>column</em> </td><td class="col2"> Old column value reference </td><td class="col3" colspan="2"> OLD.<em>column</em> </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 8 </td><td class="col1"> INSERTING </td><td class="col2"> Conditional predicate for INSERT operation </td><td class="col3" colspan="2"> TG_OP = &#039;INSERT&#039; </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> 9 </td><td class="col1"> UPDATING </td><td class="col2"> Conditional predicate for UPDATE operation </td><td class="col3" colspan="2"> TG_OP = &#039;UPDATE&#039; </td>
+	</tr>
+</table>
+
+<p>
+
+DROP TRIGGER statement:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> DROP TRIGGER <em>schema.name</em> </td><td class="col3"> DROP TRIGGER [IF EXISTS] <em>name</em> ON <em>table</em> <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="create-type-statement" id="create-type-statement">CREATE TYPE Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting CREATE TYPE statement:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> CREATE OR REPLACE TYPE <em>name</em> AS OBJECT (<em>col1 type</em>, …) </td><td class="col2"> Object type </td><td class="col3"> CREATE TYPE <em>name</em> AS (<em>col1 type</em>, …) </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> CREATE OR REPLACE TYPE <em>name</em> IS TABLE OF <em>type</em> </td><td class="col2"> Table type </td><td class="col3"> CREATE TYPE <em>name</em> AS (<em>row</em> <em>type</em>[]) </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="create-view-statement" id="create-view-statement">CREATE VIEW Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting views:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> CREATE [OR REPLACE] VIEW <em>name</em> AS <em>query</em> </td><td class="col2"> Create a view </td><td class="col3"> CREATE [OR REPLACE] VIEW <em>name</em> AS <em>query</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> WITH READ ONLY </td><td class="col2"> View cannot be updated </td><td class="col3"> Not supported, removed. <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> <br/>
+Revoke permissions to modify views </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="insert-statement" id="insert-statement">INSERT Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting inserting rows:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> INSERT INTO <em>name</em> <em>alias</em> </td><td class="col2"> Insert rows </td><td class="col3" colspan="2"> INSERT INTO <em>name</em> AS <em>alias</em> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="select-statement" id="select-statement">SELECT Statement</a></h2>
+<div class="level2">
+
+<p>
+
+Converting <acronym title="Structured Query Language">SQL</acronym> queries:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> DUAL table </td><td class="col2"> A single row, single column dummy table </td><td class="col3" colspan="2"> FROM clause can be omitted, DUAL removed </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> FROM (SELECT …) </td><td class="col2"> Optional alias for subquery </td><td class="col3"> FROM (SELECT …) <em>s</em> </td><td class="col4"> Alias required <a href="/_detail/exclamation.png?id=oracle-to-postgresql" class="media" title="exclamation.png"><img src="/_media/exclamation.png" class="media" alt="" /></a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> SELECT … MINUS SELECT … </td><td class="col2"> Exclude rows returned by 2nd query </td><td class="col3" colspan="2"> SELECT … EXCEPT SELECT … </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> <a href="/oracle-to-postgresql/connect_by_prior" class="wikilink1" title="oracle-to-postgresql:connect_by_prior">CONNECT BY PRIOR</a> </td><td class="col2"> Hierarchical queries </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/connect_by_prior" class="wikilink1" title="oracle-to-postgresql:connect_by_prior">Recursive Common Table Expressions (CTE)</a> </td>
+	</tr>
+</table>
+
+<p>
+Row limitation:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3" colspan="2"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0" rowspan="3"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">ROWNUM = 1</a> </td><td class="col2"> Return 1 row only </td><td class="col3" colspan="2"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">LIMIT 1</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">ROWNUM &lt;= n</a> </td><td class="col1" rowspan="2"> Row limit </td><td class="col2" colspan="2"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">LIMIT n</a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">ROWNUM &lt; n</a> </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/rownum" class="wikilink1" title="oracle-to-postgresql:rownum">LIMIT n - 1</a> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="anonymous-block" id="anonymous-block">Anonymous Block</a></h2>
+<div class="level2">
+
+<p>
+
+Anonymous code block:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> [DECLARE <em>declarations</em>] BEGIN <em>statements</em> END; / </td><td class="col3"> DO $$ [DECLARE  <em>declarations</em>] BEGIN <em>statements</em> END; $$; </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="plsql-statements" id="plsql-statements">PL/SQL Statements</a></h2>
+<div class="level2">
+
+<p>
+
+Cursor operations:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> <em>cur</em> SYS_REFCURSOR </td><td class="col2"> Reference cursor declaration </td><td class="col3"> <em>cur</em> REFCURSOR = <em>&#039;cur&#039;</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> CURSOR <em>cur</em> IS <em>select_stmt</em> </td><td class="col2"> Cursor declaration </td><td class="col3"> <em>cur</em> CURSOR FOR <em>select_stmt</em> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> FOR <em>rec</em> IN <em>cur</em> LOOP … END LOOP </td><td class="col2"> Fetch data from cursor </td><td class="col3"> FOR <em>rec</em> IN <em>cur</em> LOOP … END LOOP </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> 4 </td><td class="col1"> FOR <em>rec</em> IN (<em>select_stmt</em>) LOOP … </td><td class="col2"> Fetch data from query </td><td class="col3"> DECLARE <em>rec</em> RECORD; <br/>
+FOR <em>rec</em> IN (<em>select_stmt</em>) LOOP … </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> 5 </td><td class="col1"> OPEN <em>cur</em> </td><td class="col2"> Open a cursor </td><td class="col3"> OPEN <em>cur</em> </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> 6 </td><td class="col1"> FETCH <em>cur</em> INTO <em>v1, v2, …</em> </td><td class="col2"> Fetch data </td><td class="col3"> FETCH <em>cur</em> INTO <em>v1, v2, …</em> </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> 7 </td><td class="col1"> EXIT WHEN <em>cur</em>%NOTFOUND </td><td class="col2"> Terminate loop when no row found </td><td class="col3"> EXIT WHEN NOT FOUND </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> 8 </td><td class="col1"> CLOSE <em>cur</em> </td><td class="col2"> Close a cursor </td><td class="col3"> CLOSE <em>cur</em> </td>
+	</tr>
+</table>
+
+<p>
+
+Flow-of-control statements:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> IF <em>condition</em> THEN <em>statements</em> END IF </td><td class="col2"> IF statement </td><td class="col3"> IF <em>condition</em> THEN <em>statements</em> END IF </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> LOOP <em>statements</em> END LOOP </td><td class="col2"> A loop statement </td><td class="col3"> LOOP <em>statements</em> END LOOP </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> EXIT WHEN <em>condition</em> </td><td class="col2"> Exit from loop when <em>condition</em> is true </td><td class="col3"> EXIT WHEN <em>condition</em> </td>
+	</tr>
+</table>
+
+<p>
+
+Dynamic <acronym title="Structured Query Language">SQL</acronym> execution:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1" colspan="2"> <a href="/oracle-to-postgresql/execute_immediate" class="wikilink1" title="oracle-to-postgresql:execute_immediate">EXECUTE IMMEDIATE sql_string INTO ... USING ...</a> </td><td class="col3"> <a href="/oracle-to-postgresql/execute_immediate" class="wikilink1" title="oracle-to-postgresql:execute_immediate">EXECUTE sql_string INTO ... USING ...</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> :1, :2, … </td><td class="col2"> Referencing parameters in <acronym title="Structured Query Language">SQL</acronym> string </td><td class="col3"> $1, $2, … </td>
+	</tr>
+</table>
+
+<p>
+
+Executing stored procedures from a PL/<acronym title="Structured Query Language">SQL</acronym> block:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0" rowspan="2"> 1 </td><td class="col1"> <a href="/oracle-to-postgresql/call_proc" class="wikilink1" title="oracle-to-postgresql:call_proc">sp_name(param1, ...)</a> </td><td class="col2"> Execute procedure </td><td class="col3"> <a href="/oracle-to-postgresql/call_proc" class="wikilink1" title="oracle-to-postgresql:call_proc">CALL sp_name(param1, ...)</a> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> <a href="/oracle-to-postgresql/call_proc" class="wikilink1" title="oracle-to-postgresql:call_proc">sp_name</a> </td><td class="col1"> Procedure without parameters </td><td class="col2"> <a href="/oracle-to-postgresql/call_proc" class="wikilink1" title="oracle-to-postgresql:call_proc">CALL sp_name</a> </td>
+	</tr>
+</table>
+
+<p>
+
+Error handling:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> RAISE_APPLICATION_ERROR(<em>code</em>, <em>message</em>) </td><td class="col2"> Raise an user error </td><td class="col3"> RAISE EXCEPTION &#039;%s&#039;, <em>message</em> <br/>
+USING ERRCODE = <em>code</em> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> 2 </td><td class="col1"> <a href="/oracle-to-postgresql/sqlcode" class="wikilink1" title="oracle-to-postgresql:sqlcode">SQLCODE</a> </td><td class="col2"> Error code </td><td class="col3"> <a href="/oracle-to-postgresql/sqlcode" class="wikilink1" title="oracle-to-postgresql:sqlcode">SQLSTATE</a> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 3 </td><td class="col1"> <a href="/oracle-to-postgresql/sqlerrm" class="wikilink1" title="oracle-to-postgresql:sqlerrm">SQLERRM</a> </td><td class="col2"> Error message </td><td class="col3"> <a href="/oracle-to-postgresql/sqlerrm" class="wikilink1" title="oracle-to-postgresql:sqlerrm">SQLERRM</a> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="built-in-plsql-packages" id="built-in-plsql-packages">Built-in PL/SQL Packages</a></h2>
+<div class="level2">
+
+<p>
+
+Converting built-in PL/<acronym title="Structured Query Language">SQL</acronym> packages from Oracle to PostgreSQL:
+</p>
+
+<p>
+DBMS_LOB Package:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> DBMS_LOB.APPEND(<em>dest_lob, src_lob</em>) </td><td class="col2"> Append a LOB value </td><td class="col3"> <em>dest_lob := dest_lob</em> || <em>src_lob</em> </td>
+	</tr>
+</table>
+
+<p>
+
+DBMS_OUTPUT Package:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0"> 1 </td><td class="col1"> DBMS_OUTPUT.PUT_LINE(<em>text</em>) </td><td class="col2"> Output a message </td><td class="col3"> RAISE NOTICE &#039;%&#039;, <em>text</em> </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="sql-plus-commands" id="sql-plus-commands">SQL*Plus Commands</a></h2>
+<div class="level2">
+
+<p>
+
+Converting Oracle <acronym title="Structured Query Language">SQL</acronym>*Plus commands:
+
+</p>
+<table class="inline">
+	<tr class="row0">
+		<td class="col0"> </td><td class="col1" colspan="2"> <strong>Oracle</strong> </td><td class="col3"> <strong>PostgreSQL</strong> </td>
+	</tr>
+	<tr class="row1">
+		<td class="col0" rowspan="2"> 1 </td><td class="col1"> CALL <em>proc_name</em>(<em>name</em> =&gt; <em>value</em>, …) </td><td class="col2" rowspan="2"> Execute a stored procedure </td><td class="col3 leftalign" rowspan="2"> CALL <em>proc_name</em>(<em>name</em> =&gt; <em>value</em>, …)  </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> EXECUTE <em>proc_name</em>(<em>name</em> =&gt; <em>value</em>, …) </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> 2 </td><td class="col1"> SET SERVEROUTPUT ON | OFF </td><td class="col2"> Enable output for DBMS_OUTPUT </td><td class="col3"> Commented </td>
+	</tr>
+</table>
+
+</div>
+
+<h2><a name="database-migration-issues" id="database-migration-issues">Database Migration Issues</a></h2>
+<div class="level2">
+<ul>
+<li class="level1"><div class="li"> <a href="/oracle-to-postgresql/zero_char_code_in_string" class="wikilink1" title="oracle-to-postgresql:zero_char_code_in_string">Zero character code in CHAR or VARCHAR</a></div>
+</li>
+</ul>
+
+
+
+</div>
+
+					
+				</div>
+				<!-- /Content -->
+				
+								
+			</div>
+			<!-- Body -->
+
+			<!-- Footer -->
+			<div id="footer">
+					<div class="links">
+						<ul>
+ 						<li style="font-size: 12px; float: left; color: #A6A6A6;">Copyright &copy; 2010 - 2025. All Rights Reserved.
+<a href="https://www.sqlines.com/privacy" style="font-size: 12px; color: #A6A6A6;">Privacy Statement</a></li>
+																										<a href="/oracle-to-postgresql?do=login&amp;sectok=c3513597c67cfa8ee077589342c3bdfe"  class="action login" rel="nofollow"><img src="/lib/tpl/r7throot7/images/ico/login.png" title="Login" /></a>						
+							<li><a  href="http://wiki.splitbrain.org/wiki:dokuwiki" title="Driven by DokuWiki"><img src="/lib/tpl/r7throot7//images/btn/btn_dokuwiki.png?w=&amp;h=&amp;cache=cache" class="media" title="" alt="Driven by DokuWiki" /></a></li>
+						</ul>
+					</div>
+                    <span id="siteseal"><script async type="text/javascript" src="https://seal.godaddy.com/getSeal?sealID=VieDtTZaJh11rFYlrgz1g9ycy6CyXdmNzWscaKPdH6fVfgVINTLs82RvbA35"></script></span>
+			</div>
+			<!-- Footer -->
+		
+		</div>
+		<!-- DokuWiki -->
+		
+	</body>
+</html>

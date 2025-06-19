@@ -67,6 +67,35 @@ func ConvertPostProcess(sql string) string {
 		return m
 	})
 
+	// 7. MONTHS_BETWEEN conversion as post-process to avoid token conflicts
+	reMonthsBetween := regexp.MustCompile(`(?i)MONTHS_BETWEEN\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
+	sql = reMonthsBetween.ReplaceAllString(sql, "EXTRACT(YEAR FROM AGE($1, $2)) * 12 + EXTRACT(MONTH FROM AGE($1, $2))")
+
+	// 8. LAST_DAY conversion as post-process to avoid token conflicts
+	reLastDay := regexp.MustCompile(`(?i)LAST_DAY\s*\(\s*([^,]+?)\s*\)`)
+	sql = reLastDay.ReplaceAllString(sql, "(DATE_TRUNC('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::DATE")
+
+	// 9. NEXT_DAY conversion as post-process to avoid token conflicts
+	reNextDay := regexp.MustCompile(`(?i)NEXT_DAY\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
+	sql = reNextDay.ReplaceAllString(sql, "$1 + (7 + CAST($2 AS INT) - EXTRACT(DOW FROM $1))::INTEGER % 7 + 1")
+
+	// 10. REGEXP_LIKE conversion as post-process to avoid token conflicts
+	// First, handle case-insensitive matches with 'i' flag
+	reRegexpLikeWithFlag := regexp.MustCompile(`(?i)REGEXP_LIKE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*['"](?i)i['"]\s*\)`)
+	sql = reRegexpLikeWithFlag.ReplaceAllString(sql, "$1 ~* $2")
+
+	// Then handle REGEXP_LIKE without flags
+	reRegexpLikeWithoutFlag := regexp.MustCompile(`(?i)REGEXP_LIKE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
+	sql = reRegexpLikeWithoutFlag.ReplaceAllString(sql, "$1 ~ $2")
+
+	// 11. NVL conversion as post-process
+	reNvl := regexp.MustCompile(`(?i)NVL\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
+	sql = reNvl.ReplaceAllString(sql, "COALESCE($1, $2)")
+
+	// 12. DECODE conversion as post-process (simplified for common cases)
+	reDecode := regexp.MustCompile(`(?i)DECODE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
+	sql = reDecode.ReplaceAllString(sql, "CASE WHEN $1 = $2 THEN $3 WHEN $1 = $4 THEN $5 ELSE $6 END")
+
 	return sql
 }
 
@@ -423,8 +452,135 @@ func (o *Ora2PgListener) EnterQuery_block(ctx *parser.Query_blockContext) {
 
 func (o *Ora2PgListener) EnterGeneral_element_part(ctx *parser.General_element_partContext) {
 	if ctx.Id_expression() != nil && ctx.Id_expression().Regular_id() != nil && ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c() != nil {
-		// INSTR
-		if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR() != nil {
+		// NVL function
+		if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "NVL" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) == 2 {
+					o.TokenStreamRewriter.ReplaceTokenDefaultPos(ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(), "COALESCE")
+				}
+			}
+			// NVL2 function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "NVL2" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) == 3 {
+					a1 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					a2 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					a3 := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[2].GetSourceInterval())
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+						ctx.Function_argument(0).GetStop(),
+						"CASE WHEN "+a1+" IS NOT NULL THEN "+a2+" ELSE "+a3+" END")
+				}
+			}
+			// DECODE function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "DECODE" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) >= 3 {
+					expr := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					caseStmt := "CASE"
+
+					// Process pairs of condition-result
+					for i := 1; i < len(args)-1; i += 2 {
+						condition := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[i].GetSourceInterval())
+						result := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[i+1].GetSourceInterval())
+						caseStmt += " WHEN " + expr + " = " + condition + " THEN " + result
+					}
+
+					// Add ELSE clause if there's an odd number of arguments after the expression
+					if len(args)%2 == 0 {
+						elseResult := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[len(args)-1].GetSourceInterval())
+						caseStmt += " ELSE " + elseResult
+					}
+
+					caseStmt += " END"
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+						ctx.Function_argument(0).GetStop(),
+						caseStmt)
+				}
+			}
+			// ADD_MONTHS function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "ADD_MONTHS" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) == 2 {
+					date := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					months := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+						ctx.Function_argument(0).GetStop(),
+						date+" + INTERVAL '"+months+" month'")
+				}
+			}
+			// MONTHS_BETWEEN function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "MONTHS_BETWEEN" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) == 2 {
+					o.TokenStreamRewriter.ReplaceTokenDefaultPos(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+						"MONTHS_BETWEEN")
+					// We'll handle the full replacement in a post-process step to avoid conflicts
+				}
+			}
+			// LAST_DAY function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "LAST_DAY" {
+			if ctx.Function_argument(0) != nil {
+				o.TokenStreamRewriter.ReplaceTokenDefaultPos(
+					ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+					"LAST_DAY")
+				// Handled in post-process to avoid conflicts
+			}
+			// NEXT_DAY function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "NEXT_DAY" {
+			if ctx.Function_argument(0) != nil {
+				o.TokenStreamRewriter.ReplaceTokenDefaultPos(
+					ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+					"NEXT_DAY")
+				// Handled in post-process to avoid conflicts
+			}
+			// EMPTY_BLOB function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "EMPTY_BLOB" {
+			o.TokenStreamRewriter.ReplaceTokenDefault(
+				ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+				ctx.GetStop(),
+				"''::BYTEA")
+			// EMPTY_CLOB function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "EMPTY_CLOB" {
+			o.TokenStreamRewriter.ReplaceTokenDefault(
+				ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+				ctx.GetStop(),
+				"''::TEXT")
+			// REGEXP_LIKE function - handled entirely in post-process to avoid conflicts
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "REGEXP_LIKE" {
+			// Do nothing here, handled in post-process
+			// REGEXP_REPLACE function
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetText() == "REGEXP_REPLACE" {
+			if ctx.Function_argument(0) != nil {
+				args := ctx.Function_argument(0).AllArgument()
+				if len(args) >= 3 {
+					source := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[0].GetSourceInterval())
+					pattern := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[1].GetSourceInterval())
+					replacement := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[2].GetSourceInterval())
+
+					// Add global flag by default
+					flags := "'g'"
+					if len(args) >= 4 {
+						userFlags := o.TokenStreamRewriter.GetText(antlr.DefaultProgramName, args[3].GetSourceInterval())
+						flags = userFlags + ", 'g'"
+					}
+
+					o.TokenStreamRewriter.ReplaceTokenDefault(
+						ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().GetStart(),
+						ctx.Function_argument(0).GetStop(),
+						"REGEXP_REPLACE("+source+", "+pattern+", "+replacement+", "+flags+")")
+				}
+			}
+			// INSTR
+		} else if ctx.Id_expression().Regular_id().Non_reserved_keywords_pre12c().INSTR() != nil {
 			if ctx.Function_argument(0) != nil {
 				args := ctx.Function_argument(0).AllArgument()
 				if len(args) == 2 {
