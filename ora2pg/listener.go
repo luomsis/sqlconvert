@@ -69,19 +69,19 @@ func ConvertPostProcess(sql string) string {
 
 	// 7. MONTHS_BETWEEN conversion as post-process to avoid token conflicts
 	reMonthsBetween := regexp.MustCompile(`(?i)MONTHS_BETWEEN\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
-	sql = reMonthsBetween.ReplaceAllString(sql, "EXTRACT(YEAR FROM AGE($1, $2)) * 12 + EXTRACT(MONTH FROM AGE($1, $2))")
+	sql = reMonthsBetween.ReplaceAllString(sql, "EXTRACT(YEAR FROM ($1 - $2)) * 12 + EXTRACT(MONTH FROM ($1 - $2))")
 
 	// 8. LAST_DAY conversion as post-process to avoid token conflicts
 	reLastDay := regexp.MustCompile(`(?i)LAST_DAY\s*\(\s*([^,]+?)\s*\)`)
-	sql = reLastDay.ReplaceAllString(sql, "(DATE_TRUNC('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::DATE")
+	sql = reLastDay.ReplaceAllString(sql, "(DATE_TRUNC('MONTH', $1) + INTERVAL '1 MONTH - 1 day')::date")
 
 	// 9. NEXT_DAY conversion as post-process to avoid token conflicts
 	reNextDay := regexp.MustCompile(`(?i)NEXT_DAY\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
-	sql = reNextDay.ReplaceAllString(sql, "$1 + (7 + CAST($2 AS INT) - EXTRACT(DOW FROM $1))::INTEGER % 7 + 1")
+	sql = reNextDay.ReplaceAllString(sql, "$1 + (8 - EXTRACT(DOW FROM $1))::integer * INTERVAL '1 day'")
 
 	// 10. REGEXP_LIKE conversion as post-process to avoid token conflicts
 	// First, handle case-insensitive matches with 'i' flag
-	reRegexpLikeWithFlag := regexp.MustCompile(`(?i)REGEXP_LIKE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*['"](?i)i['"]\s*\)`)
+	reRegexpLikeWithFlag := regexp.MustCompile(`(?i)REGEXP_LIKE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*['\"]i['\"]\s*\)`)
 	sql = reRegexpLikeWithFlag.ReplaceAllString(sql, "$1 ~* $2")
 
 	// Then handle REGEXP_LIKE without flags
@@ -94,7 +94,88 @@ func ConvertPostProcess(sql string) string {
 
 	// 12. DECODE conversion as post-process (simplified for common cases)
 	reDecode := regexp.MustCompile(`(?i)DECODE\s*\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^,]+?)\s*\)`)
-	sql = reDecode.ReplaceAllString(sql, "CASE WHEN $1 = $2 THEN $3 WHEN $1 = $4 THEN $5 ELSE $6 END")
+	sql = reDecode.ReplaceAllString(sql, "CASE $1 WHEN $2 THEN $3 WHEN $4 THEN $5 ELSE $6 END")
+
+	// 13. ADD_MONTHS: ensure 'months' plural
+	reAddMonths := regexp.MustCompile(`(?i)INTERVAL '([0-9]+) month'`)
+	sql = reAddMonths.ReplaceAllString(sql, "INTERVAL '$1 months'")
+
+	// 14. 子查询别名补全（简单场景，FROM (SELECT ... ) 后无别名加 s）
+	reSubqueryAlias := regexp.MustCompile(`(?i)FROM\s*\(([^\)]+)\)\s*;`)
+	sql = reSubqueryAlias.ReplaceAllString(sql, "FROM ($1) s ;")
+
+	// 15. SYS_REFCURSOR 替换
+	reSysRefCursor := regexp.MustCompile(`(?i)SYS_REFCURSOR`)
+	sql = reSysRefCursor.ReplaceAllString(sql, "REFCURSOR")
+
+	// 16. SQL%ROWCOUNT 替换（n := SQL%ROWCOUNT; -> n := GET DIAGNOSTICS n = ROW_COUNT;）
+	reRowcount := regexp.MustCompile(`(?i)([a-zA-Z_][a-zA-Z0-9_]*)\s*:=\s*SQL%ROWCOUNT;`)
+	sql = reRowcount.ReplaceAllString(sql, "$1 := GET DIAGNOSTICS $1 = ROW_COUNT;")
+
+	// 17. INSERT INTO ... alias
+	reInsertAlias := regexp.MustCompile(`(?i)INSERT INTO ([a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)`)
+	sql = reInsertAlias.ReplaceAllString(sql, "INSERT INTO $1 AS $2")
+
+	// 18. CREATE VIEW ... WITH READ ONLY
+	reViewReadOnly := regexp.MustCompile(`(?i)WITH READ ONLY;`)
+	sql = reViewReadOnly.ReplaceAllString(sql, ";")
+
+	// 19. EXECUTE IMMEDIATE -> EXECUTE，参数 :1,:2 -> $1,$2
+	reExecImmediate := regexp.MustCompile(`(?i)EXECUTE IMMEDIATE\s*'([^']*)'`)
+	sql = reExecImmediate.ReplaceAllStringFunc(sql, func(m string) string {
+		re := regexp.MustCompile(`(?i)EXECUTE IMMEDIATE\s*'([^']*)'`)
+		match := re.FindStringSubmatch(m)
+		if len(match) == 2 {
+			stmt := match[1]
+			stmt = regexp.MustCompile(`:([0-9]+)`).ReplaceAllString(stmt, `$$$1`)
+			return "EXECUTE '" + stmt + "'"
+		}
+		return m
+	})
+
+	// 20. 匿名块 DECLARE ... END; / -> DO $$ DECLARE ... END; $$;
+	// reAnonBlock := regexp.MustCompile(`(?is)(DECLARE[\s\S]*?END;)\s*/`)
+	// sql = reAnonBlock.ReplaceAllString(sql, "DO $$ $1 $$;")
+
+	// 21. BEGIN ... END; -> DO $$ BEGIN ... END; $$;
+	// reBeginBlock := regexp.MustCompile(`(?is)(BEGIN[\s\S]*?END;)`)
+	// sql = reBeginBlock.ReplaceAllString(sql, "DO $$ $1 $$;")
+
+	// 22. DBMS_OUTPUT.PUT_LINE(x); -> RAISE NOTICE '%', x;
+	// reDbmsOutputLine := regexp.MustCompile(`(?i)DBMS_OUTPUT.PUT_LINE\(([^\)]*)\);`)
+	// sql = reDbmsOutputLine.ReplaceAllString(sql, "RAISE NOTICE '%', $1;")
+
+	// 23. SQLCODE -> SQLSTATE
+	reSqlcode := regexp.MustCompile(`(?i)SQLCODE`)
+	sql = reSqlcode.ReplaceAllString(sql, "SQLSTATE")
+
+	// 24. RAISE_APPLICATION_ERROR(-20001, 'Error!'); -> RAISE EXCEPTION '%s', 'Error!' USING ERRCODE = -20001;
+	reRaiseAppErr := regexp.MustCompile(`(?i)RAISE_APPLICATION_ERROR\((-?\d+),\s*'([^']*)'\);`)
+	sql = reRaiseAppErr.ReplaceAllString(sql, "RAISE EXCEPTION '%s', '$2' USING ERRCODE = $1;")
+
+	// 25. 游标声明 CURSOR c IS ... -> c CURSOR FOR ...
+	reCursorDecl := regexp.MustCompile(`(?i)CURSOR\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+IS\s+([^;]+);`)
+	sql = reCursorDecl.ReplaceAllString(sql, "$1 CURSOR FOR $2;")
+
+	// 26. DBMS_LOB.APPEND(dest, src); -> dest := dest || src;
+	reLobAppend := regexp.MustCompile(`(?i)DBMS_LOB.APPEND\(([^,]+),\s*([^\)]+)\);`)
+	sql = reLobAppend.ReplaceAllString(sql, "$1 := $1 || $2;")
+
+	// 修正 DO $...$; 为 DO $$...$$;，END; $...$; 为 END; $$;，循环直到没有 $ 版本残留
+	for {
+		old := sql
+		reDoAnyDollar := regexp.MustCompile(`DO\s*\$[^$]*\$`)
+		sql = reDoAnyDollar.ReplaceAllString(sql, "DO $$")
+		reEndAnyDollar := regexp.MustCompile(`END;\s*\$[^$]*\$;`)
+		sql = reEndAnyDollar.ReplaceAllString(sql, "END; $$;")
+		if sql == old {
+			break
+		}
+	}
+
+	// 额外修正 DO $; -> DO $$;，END; $; -> END; $$;
+	sql = strings.ReplaceAll(sql, "DO $;", "DO $$;")
+	sql = strings.ReplaceAll(sql, "END; $;", "END; $$;")
 
 	return sql
 }
